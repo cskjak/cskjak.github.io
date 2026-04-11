@@ -4,6 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>운동 트래커 — 이의찬</title>
+<link rel="manifest" href="strength-manifest.json">
+<meta name="theme-color" content="#1D9E75">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="운동 트래커">
+<link rel="apple-touch-icon" href="strength-icon.svg">
 <style>
   :root {
     --bg: #0f0f0f;
@@ -399,6 +405,14 @@
   }
 
   render();
+</script>
+
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/strength-sw.js')
+      .then(() => console.log('SW 등록 완료'))
+      .catch(e => console.log('SW 등록 실패', e));
+  }
 </script>
 </body>
 </html>
