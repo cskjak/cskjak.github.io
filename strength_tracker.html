@@ -372,29 +372,41 @@ function updateExList() {
   document.getElementById('orm-hint').textContent = '';
 }
 
-// ── Wger 운동 ID 매핑 (한국어 → Wger exercise_base ID) ──
-const WGER_IDS = {
+// ── 운동 이미지 직접 URL 매핑 (Wger 공개 이미지) ──────────
+const EXERCISE_IMAGES = {
   // 가슴
-  '벤치프레스': 192, '인클라인 벤치프레스': 213, '디클라인 벤치프레스': 872,
-  '덤벨 벤치프레스': 56, '덤벨 플라이': 28, '딥스': 37, '푸시업': 17,
+  '벤치프레스':           'https://wger.de/media/exercise-images/192/Bench-press-1.png',
+  '인클라인 벤치프레스':  'https://wger.de/media/exercise-images/195/Incline-bench-press-1.png',
+  '덤벨 벤치프레스':      'https://wger.de/media/exercise-images/73/Dumbbell-Bench-Press-1.png',
+  '덤벨 플라이':          'https://wger.de/media/exercise-images/67/Dumbbell-flyes-1.png',
+  '딥스':                 'https://wger.de/media/exercise-images/83/Bench-dips-1.png',
+  '푸시업':               'https://wger.de/media/exercise-images/75/Push-ups-1.png',
   // 등
-  '데드리프트': 230, '루마니안 데드리프트': 241, '바벨로우': 63,
-  '풀업': 31, '친업': 32, '랫풀다운': 270, '케이블 로우': 270,
-  '슈러그': 155, '페이스 풀': 329,
+  '데드리프트':           'https://wger.de/media/exercise-images/222/Deadlift-1.png',
+  '바벨로우':             'https://wger.de/media/exercise-images/109/Barbell-rear-delt-row-1.png',
+  '풀업':                 'https://wger.de/media/exercise-images/141/Pull-ups-1.png',
+  '친업':                 'https://wger.de/media/exercise-images/181/Chin-ups-2.png',
+  '슈러그':               'https://wger.de/media/exercise-images/150/Barbell-shrugs-1.png',
   // 어깨
-  '오버헤드프레스': 65, '덤벨 숄더프레스': 79, '아놀드프레스': 318,
-  '사이드 레터럴 레이즈': 76, '프론트 레이즈': 77, '업라이트 로우': 156,
+  '오버헤드프레스':        'https://wger.de/media/exercise-images/113/Overhead-press-1.png',
+  '사이드 레터럴 레이즈':  'https://wger.de/media/exercise-images/79/Lateral-raise-1.png',
+  '업라이트 로우':         'https://wger.de/media/exercise-images/106/T-bar-row-1.png',
   // 하체
-  '스쿼트': 111, '프론트 스쿼트': 357, '핵 스쿼트': 322,
-  '레그 프레스': 279, '런지': 99, '불가리안 스플릿 스쿼트': 418,
-  '힙 쓰러스트': 491, '레그 컬': 110, '레그 익스텐션': 114, '카프 레이즈': 69,
+  '스쿼트':               'https://wger.de/media/exercise-images/103/Squats-1.png',
+  '런지':                 'https://wger.de/media/exercise-images/99/Lunges-1.png',
+  '레그 컬':              'https://wger.de/media/exercise-images/123/Leg-curl-1.png',
+  '레그 익스텐션':         'https://wger.de/media/exercise-images/126/Leg-extension-1.png',
+  '카프 레이즈':           'https://wger.de/media/exercise-images/69/Calf-raises-1.png',
   // 팔
-  '바벨 컬': 24, '덤벨 컬': 72, '해머 컬': 193,
-  '트라이셉스 푸시다운': 136, '오버헤드 트라이셉스 익스텐션': 85,
-  '스컬 크러셔': 84, '클로즈 그립 벤치프레스': 196,
+  '바벨 컬':              'https://wger.de/media/exercise-images/81/Biceps-curl-1.png',
+  '덤벨 컬':              'https://wger.de/media/exercise-images/74/Bicep-curls-1.png',
+  '해머 컬':              'https://wger.de/media/exercise-images/86/Bicep-hammer-curl-1.png',
+  '스컬 크러셔':           'https://wger.de/media/exercise-images/84/Lying-close-grip-triceps-press-to-chin-1.png',
+  '클로즈 그립 벤치프레스':'https://wger.de/media/exercise-images/88/Narrow-grip-bench-press-1.png',
   // 코어
-  '플랭크': 105, '크런치': 91, '레그 레이즈': 104,
-  '행잉 레그 레이즈': 222, 'AB 롤아웃': 397, '러시안 트위스트': 388,
+  '크런치':               'https://wger.de/media/exercise-images/91/Crunches-1.png',
+  '레그 레이즈':           'https://wger.de/media/exercise-images/116/Good-mornings-2.png',
+  '러시안 트위스트':        'https://wger.de/media/exercise-images/70/Reverse-grip-bent-over-rows-1.png',
 };
 
 const imgCache = {};
@@ -406,44 +418,34 @@ function updatePreview() {
   document.getElementById('preview-dot').style.background = color;
   document.getElementById('preview-name').textContent = ex;
   document.getElementById('preview-cat').textContent  = cat;
-  fetchExImage(ex);
+  showExImage(ex);
 }
 
-function fetchExImage(ex) {
+function showExImage(ex) {
   const wrap = document.getElementById('ex-img-wrap');
-  const wgerId = WGER_IDS[ex];
-
-  if (!wgerId) {
-    wrap.innerHTML = `<div class="ex-img-placeholder">🏋️ ${ex}<br><span style="font-size:10px">이미지 준비 중</span></div>`;
-    return;
-  }
 
   // 캐시 확인
-  if (imgCache[ex]) {
-    wrap.innerHTML = imgCache[ex];
+  if (imgCache[ex]) { wrap.innerHTML = imgCache[ex]; return; }
+
+  const url = EXERCISE_IMAGES[ex];
+  if (!url) {
+    wrap.innerHTML = `<div class="ex-img-placeholder">🏋️ 이미지 준비 중</div>`;
     return;
   }
 
   wrap.innerHTML = `<div class="ex-img-loading">이미지 불러오는 중...</div>`;
-
-  fetch(`https://wger.de/api/v2/exerciseimage/?exercise_base=${wgerId}&format=json`)
-    .then(r => r.json())
-    .then(data => {
-      if (data.results && data.results.length > 0) {
-        const mainImg = data.results.find(i => i.is_main) || data.results[0];
-        const src = 'https://wger.de' + mainImg.image;
-        const html = `<img src="${src}" alt="${ex}" loading="lazy" onerror="this.parentElement.innerHTML='<div class=\\'ex-img-placeholder\\'>이미지를 불러올 수 없어요</div>'">`;
-        imgCache[ex] = html;
-        if (document.getElementById('preview-name').textContent === ex) {
-          wrap.innerHTML = html;
-        }
-      } else {
-        wrap.innerHTML = `<div class="ex-img-placeholder">🏋️ ${ex}<br><span style="font-size:10px">이미지 없음</span></div>`;
-      }
-    })
-    .catch(() => {
-      wrap.innerHTML = `<div class="ex-img-placeholder">이미지를 불러올 수 없어요</div>`;
-    });
+  const img = new Image();
+  img.onload = () => {
+    const html = `<img src="${url}" alt="${ex}" loading="lazy">`;
+    imgCache[ex] = html;
+    if (document.getElementById('preview-name').textContent === ex) {
+      wrap.innerHTML = html;
+    }
+  };
+  img.onerror = () => {
+    wrap.innerHTML = `<div class="ex-img-placeholder">🏋️ 이미지 준비 중</div>`;
+  };
+  img.src = url;
 }
 
 function updateHint() {
