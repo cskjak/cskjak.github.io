@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>운동 트래커 — 이의찬</title>
+<style>
+  :root {
+    --bg: #0f0f0f;
+    --surface: #1a1a1a;
+    --surface2: #222;
+    --border: #2a2a2a;
+    --text: #f0f0f0;
+    --muted: #666;
+    --muted2: #444;
+    --accent: #1D9E75;
+    --accent-hover: #18896a;
+    --radius: 12px;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body { font-family: 'Segoe UI', -apple-system, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+  .wrap { max-width: 480px; margin: 0 auto; padding: 1.5rem 1.25rem 4rem; }
+
+  /* Back link */
+  .back-link {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 13px; color: var(--muted); text-decoration: none;
+    margin-bottom: 1.5rem; transition: color .15s;
+  }
+  .back-link:hover { color: var(--text); }
+
+  /* Header */
+  .header { margin-bottom: 1.5rem; }
+  .header h1 { font-size: 24px; font-weight: 700; letter-spacing: -0.5px; }
+  .header p { font-size: 13px; color: var(--muted); margin-top: 4px; }
+
+  /* Stats */
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 1.5rem; }
+  .stat { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 12px; }
+  .stat-label { font-size: 10px; color: var(--muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.6px; }
+  .stat-val { font-size: 20px; font-weight: 700; color: var(--text); line-height: 1; }
+  .stat-unit { font-size: 11px; color: var(--muted); font-weight: 400; margin-left: 1px; }
+
+  /* Tabs */
+  .tabs { display: flex; background: var(--surface); border-radius: 10px; padding: 4px; margin-bottom: 1.25rem; gap: 4px; }
+  .tab { flex: 1; padding: 9px 6px; font-size: 13px; font-weight: 500; background: none; border: none; cursor: pointer; color: var(--muted); border-radius: 8px; transition: all .15s; }
+  .tab.active { background: var(--surface2); color: var(--text); }
+
+  /* Card */
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 1.25rem; margin-bottom: 10px; }
+  .card-title { font-size: 11px; color: var(--muted); margin-bottom: 14px; text-transform: uppercase; letter-spacing: 0.6px; }
+
+  /* PR list */
+  .lift-row { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+  .lift-row:last-child { margin-bottom: 0; }
+  .lift-info { flex: 0 0 120px; }
+  .lift-name { font-size: 13px; color: #ccc; display: flex; align-items: center; gap: 6px; }
+  .lift-1rm { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .bar-wrap { flex: 1; height: 5px; background: var(--border); border-radius: 3px; overflow: hidden; }
+  .bar { height: 100%; border-radius: 3px; transition: width .6s ease; }
+  .kg-val { font-size: 15px; font-weight: 700; color: var(--text); min-width: 52px; text-align: right; }
+  .kg-unit { font-size: 11px; color: var(--muted); font-weight: 400; }
+
+  /* Form */
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .form-group label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+  .form-group input, .form-group select {
+    padding: 10px 12px; border: 1px solid var(--border); border-radius: 10px;
+    background: #111; color: var(--text); font-size: 15px; outline: none; transition: border .15s;
+    -webkit-appearance: none;
+  }
+  .form-group input:focus, .form-group select:focus { border-color: #444; }
+  .form-group input.error { border-color: #c0392b; }
+  .form-group select option { background: var(--surface); }
+  .input-hint { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .input-hint.live { color: var(--accent); }
+
+  /* Buttons */
+  .btn { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 10px; background: none; color: var(--text); font-size: 14px; font-weight: 500; cursor: pointer; transition: all .15s; }
+  .btn:hover { background: var(--surface2); }
+  .btn:active { transform: scale(0.98); }
+  .btn-accent { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .btn-accent:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+  .btn-danger { border-color: #3a1a1a; color: #c0392b; margin-top: 8px; }
+  .btn-danger:hover { background: #1a0a0a; }
+
+  /* History */
+  .log-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #1e1e1e; gap: 8px; }
+  .log-item:last-child { border-bottom: none; }
+  .log-left { flex: 1; min-width: 0; }
+  .log-ex { font-size: 14px; font-weight: 500; color: var(--text); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .log-detail { font-size: 12px; color: var(--muted2); margin-top: 3px; }
+  .log-right { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+  .log-kg { font-size: 16px; font-weight: 700; color: var(--text); white-space: nowrap; }
+  .log-1rm { font-size: 11px; color: var(--muted); margin-top: 2px; text-align: right; }
+  .del-btn { width: 28px; height: 28px; border-radius: 8px; border: 1px solid var(--border); background: none; color: var(--muted); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; transition: all .15s; flex-shrink: 0; }
+  .del-btn:hover { background: #1a0a0a; border-color: #3a1a1a; color: #c0392b; }
+
+  /* Badge */
+  .badge { font-size: 10px; padding: 2px 6px; border-radius: 5px; background: #2a2010; color: #EF9F27; border: 1px solid #3a2f10; font-weight: 700; letter-spacing: 0.3px; white-space: nowrap; }
+
+  /* Chart */
+  .chart-bars { display: flex; align-items: flex-end; gap: 6px; height: 110px; padding-bottom: 20px; }
+  .bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; height: 100%; justify-content: flex-end; }
+  .bar-inner { width: 100%; border-radius: 4px 4px 0 0; min-height: 3px; transition: height .5s ease; }
+  .bar-x { font-size: 9px; color: var(--muted2); }
+
+  /* Dot */
+  .dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+
+  /* Empty */
+  .empty { text-align: center; padding: 2rem 1rem; font-size: 13px; color: var(--muted2); }
+
+  /* Toast */
+  .toast {
+    position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%) translateY(80px);
+    background: var(--surface2); border: 1px solid var(--border); border-radius: 10px;
+    padding: 10px 20px; font-size: 13px; color: var(--text);
+    transition: transform .3s ease; z-index: 999; white-space: nowrap;
+    pointer-events: none;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <a href="portfolio.html" class="back-link">← 포트폴리오</a>
+
+  <div class="header">
+    <h1>운동 트래커</h1>
+    <p id="today-date"></p>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><div class="stat-label">총 세션</div><div class="stat-val" id="s-session">0<span class="stat-unit">회</span></div></div>
+    <div class="stat"><div class="stat-label">주간 볼륨</div><div class="stat-val" id="s-volume">0<span class="stat-unit">kg</span></div></div>
+    <div class="stat"><div class="stat-label">PR 달성</div><div class="stat-val" id="s-pr">0<span class="stat-unit">개</span></div></div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('pr')">PR 현황</button>
+    <button class="tab" onclick="showTab('log')">기록 추가</button>
+    <button class="tab" onclick="showTab('history')">히스토리</button>
+  </div>
+
+  <!-- PR 현황 -->
+  <div id="tab-pr">
+    <div class="card">
+      <div class="card-title">개인 최고 기록 (실제 중량 / 추정 1RM)</div>
+      <div id="pr-list"><div class="empty">아직 기록이 없어요</div></div>
+    </div>
+    <div class="card">
+      <div class="card-title">세션별 총 볼륨 (kg)</div>
+      <div class="chart-bars" id="chart-bars"><div class="empty">기록이 없어요</div></div>
+    </div>
+  </div>
+
+  <!-- 기록 추가 -->
+  <div id="tab-log" style="display:none">
+    <div class="card">
+      <div class="card-title">새 기록 추가</div>
+      <div class="form-grid">
+        <div class="form-group" style="grid-column:1/-1">
+          <label>종목</label>
+          <select id="f-ex">
+            <option>데드리프트</option>
+            <option>스쿼트</option>
+            <option>벤치프레스</option>
+            <option>오버헤드프레스</option>
+            <option>바벨로우</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>무게 (kg)</label>
+          <input type="number" id="f-kg" placeholder="100" min="0" max="500" step="2.5" oninput="updateHint()">
+        </div>
+        <div class="form-group">
+          <label>렙</label>
+          <input type="number" id="f-rep" placeholder="5" min="1" max="50" value="5" oninput="updateHint()">
+        </div>
+        <div class="form-group" style="grid-column:1/-1">
+          <label>세트</label>
+          <input type="number" id="f-set" placeholder="3" min="1" max="20" value="3">
+          <span class="input-hint live" id="orm-hint"></span>
+        </div>
+      </div>
+      <button class="btn btn-accent" onclick="addLog()">기록 추가</button>
+    </div>
+  </div>
+
+  <!-- 히스토리 -->
+  <div id="tab-history" style="display:none">
+    <div class="card">
+      <div class="card-title">기록 히스토리</div>
+      <div id="history-list"><div class="empty">아직 기록이 없어요</div></div>
+    </div>
+    <button class="btn btn-danger" onclick="clearAll()">기록 전체 삭제</button>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const COLORS = {
+    '데드리프트':    '#1D9E75',
+    '스쿼트':        '#378ADD',
+    '벤치프레스':    '#D85A30',
+    '오버헤드프레스':'#7F77DD',
+    '바벨로우':      '#BA7517'
+  };
+
+  // Epley 1RM 공식
+  function calc1RM(kg, reps) {
+    if (reps === 1) return kg;
+    return Math.round(kg * (1 + reps / 30) * 10) / 10;
+  }
+
+  // 오늘 날짜
+  const now = new Date();
+  document.getElementById('today-date').textContent =
+    now.getFullYear() + '년 ' + (now.getMonth()+1) + '월 ' + now.getDate() + '일';
+
+  let logs = JSON.parse(localStorage.getItem('gym_logs') || '[]');
+
+  function save() {
+    localStorage.setItem('gym_logs', JSON.stringify(logs));
+  }
+
+  function getPRs() {
+    const prs = {}, prOrm = {};
+    logs.forEach(l => {
+      if (!prs[l.ex] || l.kg > prs[l.ex]) prs[l.ex] = l.kg;
+      const orm = calc1RM(l.kg, l.reps);
+      if (!prOrm[l.ex] || orm > prOrm[l.ex]) prOrm[l.ex] = orm;
+    });
+    return { prs, prOrm };
+  }
+
+  function updateHint() {
+    const kg = parseFloat(document.getElementById('f-kg').value);
+    const reps = parseInt(document.getElementById('f-rep').value);
+    const hint = document.getElementById('orm-hint');
+    if (kg > 0 && reps > 0) {
+      hint.textContent = '추정 1RM: ' + calc1RM(kg, reps) + ' kg';
+    } else {
+      hint.textContent = '';
+    }
+  }
+
+  function toast(msg) {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.classList.add('show');
+    setTimeout(() => el.classList.remove('show'), 2200);
+  }
+
+  function addLog() {
+    const ex   = document.getElementById('f-ex').value;
+    const kg   = parseFloat(document.getElementById('f-kg').value);
+    const reps = parseInt(document.getElementById('f-rep').value);
+    const sets = parseInt(document.getElementById('f-set').value);
+
+    const kgEl  = document.getElementById('f-kg');
+    const repEl = document.getElementById('f-rep');
+    const setEl = document.getElementById('f-set');
+
+    kgEl.classList.remove('error');
+    repEl.classList.remove('error');
+    setEl.classList.remove('error');
+
+    let valid = true;
+    if (!kg || isNaN(kg) || kg <= 0 || kg > 500) { kgEl.classList.add('error'); kgEl.focus(); valid = false; }
+    if (!reps || isNaN(reps) || reps < 1 || reps > 50) { repEl.classList.add('error'); if(valid) repEl.focus(); valid = false; }
+    if (!sets || isNaN(sets) || sets < 1 || sets > 20) { setEl.classList.add('error'); if(valid) setEl.focus(); valid = false; }
+    if (!valid) return;
+
+    const { prs } = getPRs();
+    const ispr = !prs[ex] || kg > prs[ex];
+    const orm = calc1RM(kg, reps);
+
+    logs.unshift({ ex, kg, sets, reps, orm, ispr, ts: Date.now() });
+    save();
+
+    kgEl.value = '';
+    kgEl.classList.remove('error');
+    document.getElementById('orm-hint').textContent = '';
+
+    render();
+    showTab('history');
+    toast(ispr ? '🏆 PR 달성! ' + kg + 'kg' : '기록 추가됨');
+  }
+
+  function deleteLog(idx) {
+    logs.splice(idx, 1);
+    save();
+    render();
+    toast('기록 삭제됨');
+  }
+
+  function clearAll() {
+    if (!confirm('모든 기록을 삭제할까요?')) return;
+    logs = [];
+    save();
+    render();
+    toast('전체 삭제됨');
+  }
+
+  function render() {
+    const exOrder = ['데드리프트','스쿼트','벤치프레스','오버헤드프레스','바벨로우'];
+    const { prs, prOrm } = getPRs();
+
+    // PR 목록
+    const prEl = document.getElementById('pr-list');
+    const hasPR = Object.keys(prs).length > 0;
+    const maxPR = hasPR ? Math.max(...Object.values(prs)) : 1;
+    prEl.innerHTML = hasPR
+      ? exOrder.filter(e => prs[e]).map(e => `
+          <div class="lift-row">
+            <div class="lift-info">
+              <div class="lift-name"><span class="dot" style="background:${COLORS[e]}"></span>${e}</div>
+              <div class="lift-1rm">추정 1RM ${prOrm[e]}kg</div>
+            </div>
+            <div class="bar-wrap"><div class="bar" style="width:${Math.round(prs[e]/maxPR*100)}%;background:${COLORS[e]}"></div></div>
+            <div class="kg-val">${prs[e]}<span class="kg-unit">kg</span></div>
+          </div>`).join('')
+      : '<div class="empty">아직 기록이 없어요</div>';
+
+    // 히스토리
+    const histEl = document.getElementById('history-list');
+    histEl.innerHTML = logs.length === 0
+      ? '<div class="empty">아직 기록이 없어요</div>'
+      : logs.map((l, i) => {
+          const d = new Date(l.ts);
+          const ds = (d.getMonth()+1) + '/' + d.getDate() + ' ' + d.getHours() + ':' + String(d.getMinutes()).padStart(2,'0');
+          const orm = l.orm || calc1RM(l.kg, l.reps);
+          return `<div class="log-item">
+            <div class="log-left">
+              <div class="log-ex">
+                <span class="dot" style="background:${COLORS[l.ex]||'#888'}"></span>
+                ${l.ex}
+                ${l.ispr ? '<span class="badge">PR</span>' : ''}
+              </div>
+              <div class="log-detail">${l.sets}세트 × ${l.reps}렙 · ${ds}</div>
+            </div>
+            <div class="log-right">
+              <div>
+                <div class="log-kg">${l.kg}kg</div>
+                <div class="log-1rm">1RM ~${orm}kg</div>
+              </div>
+              <button class="del-btn" onclick="deleteLog(${i})" title="삭제">×</button>
+            </div>
+          </div>`;
+        }).join('');
+
+    // 차트 (최근 8세션)
+    const sessions = {};
+    logs.forEach(l => {
+      const d = new Date(l.ts);
+      const k = (d.getMonth()+1) + '/' + d.getDate();
+      sessions[k] = (sessions[k] || 0) + l.kg * l.sets * l.reps;
+    });
+    const keys = Object.keys(sessions).slice(-8);
+    const cb = document.getElementById('chart-bars');
+    if (keys.length === 0) {
+      cb.innerHTML = '<div class="empty">기록이 없어요</div>';
+    } else {
+      const maxV = Math.max(...keys.map(k => sessions[k]), 1);
+      cb.innerHTML = keys.map(k => `
+        <div class="bar-col">
+          <div class="bar-inner" style="height:${Math.round(sessions[k]/maxV*85)}%;background:${COLORS['데드리프트']};opacity:0.8"></div>
+          <div class="bar-x">${k}</div>
+        </div>`).join('');
+    }
+
+    // 통계
+    const wstart = Date.now() - 7 * 86400000;
+    const wv = logs.filter(l => l.ts > wstart).reduce((a, l) => a + l.kg * l.sets * l.reps, 0);
+    const sessionSet = new Set(logs.map(l => {
+      const d = new Date(l.ts);
+      return (d.getMonth()+1) + '/' + d.getDate();
+    }));
+    document.getElementById('s-session').innerHTML = sessionSet.size + '<span class="stat-unit">회</span>';
+    document.getElementById('s-volume').innerHTML  = Math.round(wv).toLocaleString() + '<span class="stat-unit">kg</span>';
+    document.getElementById('s-pr').innerHTML      = Object.keys(prs).length + '<span class="stat-unit">개</span>';
+  }
+
+  function showTab(t) {
+    ['pr','log','history'].forEach(id => {
+      document.getElementById('tab-' + id).style.display = id === t ? 'block' : 'none';
+    });
+    document.querySelectorAll('.tab').forEach((el, i) => {
+      el.classList.toggle('active', ['pr','log','history'][i] === t);
+    });
+  }
+
+  render();
+</script>
+</body>
+</html>

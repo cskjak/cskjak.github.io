@@ -1,63 +1,5 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MBTI 테스트 — 이의찬</title>
-<link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600&display=swap" rel="stylesheet">
-<style>
-  :root {
-    --font-sans: 'Pretendard', sans-serif;
-    --color-background-primary: #ffffff;
-    --color-background-secondary: #f5f5f7;
-    --color-text-primary: #1d1d1f;
-    --color-text-secondary: #6e6e73;
-    --color-border-secondary: #d2d2d7;
-    --color-border-tertiary: #e5e5ea;
-    --border-radius-lg: 12px;
-    --border-radius-md: 8px;
-  }
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    background: #f5f5f7;
-    font-family: var(--font-sans);
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 2rem 1rem;
-  }
-  header {
-    width: 100%;
-    max-width: 540px;
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    margin-bottom: 1.5rem;
-  }
-  header a {
-    font-size: 13px;
-    color: #6e6e73;
-    text-decoration: none;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-  }
-  header a:hover { color: #1d1d1f; }
-  header h1 {
-    font-size: 17px;
-    font-weight: 600;
-    color: #1d1d1f;
-  }
-  .card {
-    background: #ffffff;
-    border-radius: 16px;
-    padding: 2rem;
-    width: 100%;
-    max-width: 540px;
-    box-shadow: 0 2px 20px rgba(0,0,0,0.06);
-  }
 
+<style>
   .mbti-wrap { padding: 1rem 0; font-family: var(--font-sans); }
   .progress-bar { height: 4px; background: var(--color-border-tertiary); border-radius: 2px; margin-bottom: 2rem; }
   .progress-fill { height: 4px; background: #7F77DD; border-radius: 2px; transition: width 0.3s; }
@@ -86,17 +28,8 @@
   .restart-btn { width: 100%; padding: 12px; border-radius: var(--border-radius-md); border: 0.5px solid #7F77DD; background: transparent; cursor: pointer; font-size: 14px; color: #534AB7; margin-top: 1rem; }
   .restart-btn:hover { background: #EEEDFE; }
 </style>
-</head>
-<body>
 
-<header>
-  <a href="portfolio.html">← 포트폴리오</a>
-  <h1>MBTI 성격 유형 테스트</h1>
-</header>
-
-<div class="card">
-  <div class="mbti-wrap" id="app"></div>
-</div>
+<div class="mbti-wrap" id="app"></div>
 
 <script>
 const questions = [
@@ -236,5 +169,3 @@ window.restart = function() {
 
 renderQuestion();
 </script>
-</body>
-</html>
