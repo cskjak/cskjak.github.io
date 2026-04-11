@@ -89,10 +89,36 @@
   .input-hint.live { color: var(--accent); }
 
   /* 종목 선택 미리보기 */
-  .ex-preview { display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: #111; border-radius: 8px; margin-bottom: 10px; }
+  .ex-preview { display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: #111; border-radius: 8px 8px 0 0; }
   .ex-preview-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
   .ex-preview-name { font-size: 13px; color: var(--text); }
   .ex-preview-cat { font-size: 11px; color: var(--muted); margin-left: auto; }
+
+  /* 운동 이미지 */
+  .ex-img-wrap {
+    background: #111; border-radius: 0 0 8px 8px;
+    margin-bottom: 10px; overflow: hidden;
+    min-height: 48px; position: relative;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .ex-img-wrap img {
+    width: 100%; max-height: 220px; object-fit: contain;
+    display: block; border-radius: 0 0 8px 8px;
+  }
+  .ex-img-placeholder {
+    font-size: 12px; color: var(--muted2);
+    padding: 14px; text-align: center;
+  }
+  .ex-img-loading {
+    font-size: 12px; color: var(--muted);
+    padding: 14px; display: flex; align-items: center; gap: 6px;
+  }
+  .ex-img-loading::before {
+    content: ''; width: 12px; height: 12px; border-radius: 50%;
+    border: 2px solid var(--muted2); border-top-color: var(--accent);
+    animation: spin .8s linear infinite; flex-shrink: 0;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
 
   /* Buttons */
   .btn { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 10px; background: none; color: var(--text); font-size: 14px; font-weight: 500; cursor: pointer; transition: all .15s; }
@@ -211,6 +237,9 @@
             <span class="ex-preview-dot" id="preview-dot"></span>
             <span class="ex-preview-name" id="preview-name"></span>
             <span class="ex-preview-cat" id="preview-cat"></span>
+          </div>
+          <div class="ex-img-wrap" id="ex-img-wrap">
+            <div class="ex-img-placeholder">종목을 선택하면 자세 이미지가 표시돼요</div>
           </div>
         </div>
         <div class="form-group" id="kg-group">
@@ -343,13 +372,78 @@ function updateExList() {
   document.getElementById('orm-hint').textContent = '';
 }
 
+// ── Wger 운동 ID 매핑 (한국어 → Wger exercise_base ID) ──
+const WGER_IDS = {
+  // 가슴
+  '벤치프레스': 192, '인클라인 벤치프레스': 213, '디클라인 벤치프레스': 872,
+  '덤벨 벤치프레스': 56, '덤벨 플라이': 28, '딥스': 37, '푸시업': 17,
+  // 등
+  '데드리프트': 230, '루마니안 데드리프트': 241, '바벨로우': 63,
+  '풀업': 31, '친업': 32, '랫풀다운': 270, '케이블 로우': 270,
+  '슈러그': 155, '페이스 풀': 329,
+  // 어깨
+  '오버헤드프레스': 65, '덤벨 숄더프레스': 79, '아놀드프레스': 318,
+  '사이드 레터럴 레이즈': 76, '프론트 레이즈': 77, '업라이트 로우': 156,
+  // 하체
+  '스쿼트': 111, '프론트 스쿼트': 357, '핵 스쿼트': 322,
+  '레그 프레스': 279, '런지': 99, '불가리안 스플릿 스쿼트': 418,
+  '힙 쓰러스트': 491, '레그 컬': 110, '레그 익스텐션': 114, '카프 레이즈': 69,
+  // 팔
+  '바벨 컬': 24, '덤벨 컬': 72, '해머 컬': 193,
+  '트라이셉스 푸시다운': 136, '오버헤드 트라이셉스 익스텐션': 85,
+  '스컬 크러셔': 84, '클로즈 그립 벤치프레스': 196,
+  // 코어
+  '플랭크': 105, '크런치': 91, '레그 레이즈': 104,
+  '행잉 레그 레이즈': 222, 'AB 롤아웃': 397, '러시안 트위스트': 388,
+};
+
+const imgCache = {};
+
 function updatePreview() {
-  const cat  = document.getElementById('f-cat').value;
-  const ex   = document.getElementById('f-ex').value;
+  const cat   = document.getElementById('f-cat').value;
+  const ex    = document.getElementById('f-ex').value;
   const color = getExColor(cat);
   document.getElementById('preview-dot').style.background = color;
   document.getElementById('preview-name').textContent = ex;
   document.getElementById('preview-cat').textContent  = cat;
+  fetchExImage(ex);
+}
+
+function fetchExImage(ex) {
+  const wrap = document.getElementById('ex-img-wrap');
+  const wgerId = WGER_IDS[ex];
+
+  if (!wgerId) {
+    wrap.innerHTML = `<div class="ex-img-placeholder">🏋️ ${ex}<br><span style="font-size:10px">이미지 준비 중</span></div>`;
+    return;
+  }
+
+  // 캐시 확인
+  if (imgCache[ex]) {
+    wrap.innerHTML = imgCache[ex];
+    return;
+  }
+
+  wrap.innerHTML = `<div class="ex-img-loading">이미지 불러오는 중...</div>`;
+
+  fetch(`https://wger.de/api/v2/exerciseimage/?exercise_base=${wgerId}&format=json`)
+    .then(r => r.json())
+    .then(data => {
+      if (data.results && data.results.length > 0) {
+        const mainImg = data.results.find(i => i.is_main) || data.results[0];
+        const src = 'https://wger.de' + mainImg.image;
+        const html = `<img src="${src}" alt="${ex}" loading="lazy" onerror="this.parentElement.innerHTML='<div class=\\'ex-img-placeholder\\'>이미지를 불러올 수 없어요</div>'">`;
+        imgCache[ex] = html;
+        if (document.getElementById('preview-name').textContent === ex) {
+          wrap.innerHTML = html;
+        }
+      } else {
+        wrap.innerHTML = `<div class="ex-img-placeholder">🏋️ ${ex}<br><span style="font-size:10px">이미지 없음</span></div>`;
+      }
+    })
+    .catch(() => {
+      wrap.innerHTML = `<div class="ex-img-placeholder">이미지를 불러올 수 없어요</div>`;
+    });
 }
 
 function updateHint() {
