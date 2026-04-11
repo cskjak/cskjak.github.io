@@ -1,87 +1,446 @@
-
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MBTI 성격 유형 테스트 — IC.DEV</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&family=Pretendard:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
-  .mbti-wrap { padding: 1rem 0; font-family: var(--font-sans); }
-  .progress-bar { height: 4px; background: var(--color-border-tertiary); border-radius: 2px; margin-bottom: 2rem; }
-  .progress-fill { height: 4px; background: #7F77DD; border-radius: 2px; transition: width 0.3s; }
-  .q-num { font-size: 13px; color: var(--color-text-secondary); margin-bottom: 8px; }
-  .q-text { font-size: 17px; font-weight: 500; color: var(--color-text-primary); margin-bottom: 1.5rem; line-height: 1.5; }
-  .options { display: flex; flex-direction: column; gap: 10px; }
-  .opt-btn { background: var(--color-background-primary); border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-lg); padding: 14px 16px; text-align: left; cursor: pointer; font-size: 15px; color: var(--color-text-primary); transition: all 0.15s; }
-  .opt-btn:hover { background: var(--color-background-secondary); border-color: #7F77DD; }
-  .opt-btn.selected { background: #EEEDFE; border-color: #7F77DD; color: #3C3489; }
-  .nav { display: flex; gap: 10px; margin-top: 1.5rem; }
-  .nav button { flex: 1; padding: 12px; border-radius: var(--border-radius-md); border: 0.5px solid var(--color-border-secondary); background: transparent; cursor: pointer; font-size: 14px; color: var(--color-text-primary); }
-  .nav .next { background: #7F77DD; color: white; border-color: #7F77DD; font-weight: 500; }
-  .nav .next:hover { background: #534AB7; }
-  .nav .prev:hover { background: var(--color-background-secondary); }
-  .result-card { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 1.5rem; margin-bottom: 1rem; }
-  .mbti-type { font-size: 48px; font-weight: 500; color: #534AB7; margin-bottom: 4px; }
-  .mbti-name { font-size: 18px; color: var(--color-text-secondary); margin-bottom: 1rem; }
-  .trait-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
-  .trait-label { font-size: 13px; color: var(--color-text-secondary); width: 80px; }
-  .trait-bar-wrap { flex: 1; height: 8px; background: var(--color-background-secondary); border-radius: 4px; overflow: hidden; }
-  .trait-bar { height: 8px; border-radius: 4px; transition: width 1s; }
-  .trait-pct { font-size: 13px; color: var(--color-text-secondary); width: 36px; text-align: right; }
-  .desc { font-size: 15px; color: var(--color-text-primary); line-height: 1.7; margin-top: 1rem; }
-  .strengths { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 1rem; }
-  .strength-item { background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 8px 12px; font-size: 13px; color: var(--color-text-secondary); }
-  .restart-btn { width: 100%; padding: 12px; border-radius: var(--border-radius-md); border: 0.5px solid #7F77DD; background: transparent; cursor: pointer; font-size: 14px; color: #534AB7; margin-top: 1rem; }
-  .restart-btn:hover { background: #EEEDFE; }
-</style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #111118;
+    --border: rgba(255,255,255,0.08);
+    --accent: #c8f560;
+    --accent2: #7c6dfa;
+    --text: #f0f0f0;
+    --muted: #666;
+    --card: #13131c;
+  }
 
-<div class="mbti-wrap" id="app"></div>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Pretendard', sans-serif;
+    font-weight: 300;
+    min-height: 100vh;
+    cursor: none;
+    overflow-x: hidden;
+  }
+
+  .cursor {
+    position: fixed; width: 10px; height: 10px;
+    background: var(--accent); border-radius: 50%;
+    pointer-events: none; z-index: 9999;
+    transform: translate(-50%,-50%);
+    transition: transform 0.1s;
+  }
+  .cursor-ring {
+    position: fixed; width: 36px; height: 36px;
+    border: 1px solid rgba(200,245,96,0.4); border-radius: 50%;
+    pointer-events: none; z-index: 9998;
+    transform: translate(-50%,-50%);
+    transition: all 0.15s ease;
+  }
+
+  /* Nav */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 1.5rem 4rem;
+    background: rgba(10,10,15,0.85);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-logo {
+    font-family: 'DM Mono', monospace;
+    font-size: 14px; color: var(--accent); letter-spacing: 0.1em;
+    text-decoration: none;
+  }
+  .nav-back {
+    font-family: 'DM Mono', monospace; font-size: 12px;
+    color: var(--muted); text-decoration: none; letter-spacing: 0.05em;
+    display: flex; align-items: center; gap: 6px;
+    transition: color 0.2s;
+  }
+  .nav-back:hover { color: var(--text); }
+
+  /* Main */
+  main {
+    min-height: 100vh;
+    display: flex; align-items: center; justify-content: center;
+    padding: 8rem 1.5rem 4rem;
+  }
+
+  .container {
+    width: 100%; max-width: 560px;
+  }
+
+  /* Header */
+  .test-header {
+    text-align: center; margin-bottom: 3rem;
+  }
+  .test-tag {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-family: 'DM Mono', monospace; font-size: 11px;
+    color: var(--accent); letter-spacing: 0.2em;
+    margin-bottom: 1rem;
+    padding: 5px 12px; border: 1px solid rgba(200,245,96,0.25);
+    border-radius: 100px;
+  }
+  .test-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(2rem, 6vw, 3rem);
+    line-height: 1.1; margin-bottom: 0.75rem;
+  }
+  .test-subtitle {
+    font-size: 14px; color: var(--muted); line-height: 1.7;
+  }
+
+  /* Progress */
+  .progress-wrap {
+    margin-bottom: 2.5rem;
+  }
+  .progress-meta {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 10px;
+  }
+  .progress-label {
+    font-family: 'DM Mono', monospace; font-size: 11px;
+    color: var(--muted); letter-spacing: 0.1em;
+  }
+  .progress-count {
+    font-family: 'DM Mono', monospace; font-size: 11px;
+    color: var(--accent); letter-spacing: 0.05em;
+  }
+  .progress-bar {
+    height: 2px; background: var(--border); border-radius: 1px;
+  }
+  .progress-fill {
+    height: 2px; border-radius: 1px;
+    background: linear-gradient(90deg, var(--accent2), var(--accent));
+    transition: width 0.4s ease;
+  }
+
+  /* Question card */
+  .q-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 2rem;
+    margin-bottom: 1rem;
+    animation: fadeUp 0.35s ease;
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .q-dim {
+    font-family: 'DM Mono', monospace; font-size: 10px;
+    color: var(--accent2); letter-spacing: 0.15em;
+    margin-bottom: 0.75rem;
+  }
+  .q-text {
+    font-size: 17px; font-weight: 500; line-height: 1.6;
+    margin-bottom: 1.5rem;
+  }
+
+  /* Options */
+  .options { display: flex; flex-direction: column; gap: 10px; }
+  .opt-btn {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 18px;
+    text-align: left; cursor: none;
+    font-size: 14px; font-family: 'Pretendard', sans-serif;
+    font-weight: 300; color: var(--muted);
+    line-height: 1.5;
+    transition: all 0.2s;
+    position: relative; overflow: hidden;
+  }
+  .opt-btn::before {
+    content: '';
+    position: absolute; left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: linear-gradient(to bottom, var(--accent2), var(--accent));
+    transform: scaleY(0);
+    transition: transform 0.2s;
+    border-radius: 0 2px 2px 0;
+  }
+  .opt-btn:hover {
+    border-color: rgba(255,255,255,0.18);
+    color: var(--text);
+    background: rgba(255,255,255,0.03);
+  }
+  .opt-btn.selected {
+    border-color: rgba(124,109,250,0.5);
+    color: var(--text);
+    background: rgba(124,109,250,0.08);
+  }
+  .opt-btn.selected::before { transform: scaleY(1); }
+
+  /* Nav buttons */
+  .nav-btns {
+    display: flex; gap: 10px; margin-top: 1rem;
+  }
+  .btn-prev {
+    padding: 12px 20px;
+    border: 1px solid var(--border); border-radius: 6px;
+    background: transparent; cursor: none;
+    font-family: 'DM Mono', monospace; font-size: 12px;
+    color: var(--muted); letter-spacing: 0.05em;
+    transition: all 0.2s;
+  }
+  .btn-prev:hover { border-color: rgba(255,255,255,0.2); color: var(--text); }
+  .btn-next {
+    flex: 1;
+    padding: 12px 20px;
+    border: none; border-radius: 6px;
+    background: var(--accent); cursor: none;
+    font-family: 'DM Mono', monospace; font-size: 12px;
+    color: #0a0a0f; font-weight: 500; letter-spacing: 0.05em;
+    transition: all 0.2s;
+  }
+  .btn-next:hover { background: #d4f87a; transform: translateY(-1px); }
+  .btn-next:disabled {
+    background: rgba(200,245,96,0.2);
+    color: rgba(10,10,15,0.4);
+    cursor: not-allowed; transform: none;
+  }
+
+  /* ── Result ── */
+  .result-wrap { animation: fadeUp 0.5s ease; }
+
+  .result-hero {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 2.5rem 2rem;
+    margin-bottom: 1rem;
+    text-align: center;
+    position: relative; overflow: hidden;
+  }
+  .result-hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse 70% 60% at 50% 0%, rgba(124,109,250,0.12) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .result-type {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(3.5rem, 12vw, 5.5rem);
+    color: var(--accent);
+    line-height: 1; margin-bottom: 0.5rem;
+    letter-spacing: -0.02em;
+  }
+  .result-name {
+    font-family: 'DM Mono', monospace; font-size: 13px;
+    color: var(--accent2); letter-spacing: 0.15em;
+    margin-bottom: 1.5rem;
+  }
+  .result-desc {
+    font-size: 14px; color: var(--muted); line-height: 1.8;
+    max-width: 420px; margin: 0 auto;
+  }
+
+  .result-traits {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.75rem 2rem;
+    margin-bottom: 1rem;
+  }
+  .section-label {
+    font-family: 'DM Mono', monospace; font-size: 10px;
+    color: var(--accent); letter-spacing: 0.2em;
+    margin-bottom: 1.25rem;
+  }
+  .trait-row {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 14px;
+  }
+  .trait-row:last-child { margin-bottom: 0; }
+  .trait-label {
+    font-family: 'DM Mono', monospace; font-size: 11px;
+    color: var(--muted); letter-spacing: 0.05em;
+    width: 72px; flex-shrink: 0;
+  }
+  .trait-bar-wrap {
+    flex: 1; height: 4px;
+    background: var(--border); border-radius: 2px; overflow: hidden;
+  }
+  .trait-bar {
+    height: 4px; border-radius: 2px;
+    transition: width 1.2s cubic-bezier(0.16,1,0.3,1);
+    width: 0;
+  }
+  .trait-pct {
+    font-family: 'DM Mono', monospace; font-size: 11px;
+    color: var(--muted); width: 34px; text-align: right; flex-shrink: 0;
+  }
+
+  .result-strengths {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.75rem 2rem;
+    margin-bottom: 1rem;
+  }
+  .strengths-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+    margin-top: 0;
+  }
+  .strength-item {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-family: 'DM Mono', monospace; font-size: 11px;
+    color: var(--muted); letter-spacing: 0.05em;
+    transition: all 0.2s;
+  }
+  .strength-item:hover {
+    border-color: rgba(124,109,250,0.3);
+    color: var(--text);
+  }
+
+  .btn-restart {
+    width: 100%;
+    padding: 14px;
+    border: 1px solid var(--border); border-radius: 6px;
+    background: transparent; cursor: none;
+    font-family: 'DM Mono', monospace; font-size: 12px;
+    color: var(--muted); letter-spacing: 0.08em;
+    transition: all 0.2s;
+    margin-top: 0.5rem;
+  }
+  .btn-restart:hover {
+    border-color: rgba(200,245,96,0.3);
+    color: var(--accent);
+    background: rgba(200,245,96,0.04);
+  }
+
+  @media (max-width: 600px) {
+    nav { padding: 1rem 1.25rem; }
+    main { padding: 7rem 1rem 3rem; }
+    .q-card, .result-hero, .result-traits, .result-strengths { padding: 1.5rem 1.25rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursor-ring"></div>
+
+<nav>
+  <a href="index.html" class="nav-logo">IC.DEV</a>
+  <a href="index.html" class="nav-back">← 포트폴리오</a>
+</nav>
+
+<main>
+  <div class="container">
+
+    <div class="test-header" id="header">
+      <div class="test-tag">// MBTI TEST</div>
+      <h1 class="test-title">나의 성격 유형은?</h1>
+      <p class="test-subtitle">20개의 질문으로 알아보는 MBTI 성격 유형 분석</p>
+    </div>
+
+    <div class="progress-wrap" id="progress-wrap">
+      <div class="progress-meta">
+        <span class="progress-label">PROGRESS</span>
+        <span class="progress-count" id="progress-count">0 / 20</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+      </div>
+    </div>
+
+    <div id="app"></div>
+
+  </div>
+</main>
 
 <script>
+const cursor = document.getElementById('cursor');
+const ring   = document.getElementById('cursor-ring');
+document.addEventListener('mousemove', e => {
+  cursor.style.left = e.clientX + 'px';
+  cursor.style.top  = e.clientY + 'px';
+  setTimeout(() => {
+    ring.style.left = e.clientX + 'px';
+    ring.style.top  = e.clientY + 'px';
+  }, 80);
+});
+
+const dimLabel = { EI:'E / I', SN:'S / N', TF:'T / F', JP:'J / P' };
+
 const questions = [
-  { text: "파티나 모임에서 나는...", a: "다양한 사람들과 어울리며 에너지를 얻는다", b: "소수의 친한 사람들과 대화하거나 혼자 있고 싶다", dim: "EI" },
-  { text: "새로운 정보를 접할 때 나는...", a: "구체적인 사실과 세부 사항에 집중한다", b: "큰 그림과 가능성에 더 관심이 간다", dim: "SN" },
-  { text: "결정을 내릴 때 나는...", a: "논리와 객관적 분석을 중시한다", b: "사람들의 감정과 가치관을 고려한다", dim: "TF" },
-  { text: "일상에서 나는...", a: "계획을 세우고 정해진 대로 움직이는 게 편하다", b: "상황에 따라 유연하게 대처하는 걸 선호한다", dim: "JP" },
-  { text: "주말 계획이 생겼을 때 나는...", a: "미리 정해두고 준비하는 편이다", b: "즉흥적으로 결정하는 걸 즐긴다", dim: "JP" },
-  { text: "혼자 있는 시간이 생기면 나는...", a: "밖에 나가거나 사람을 만나고 싶다", b: "혼자만의 시간을 충전의 기회로 삼는다", dim: "EI" },
-  { text: "문제를 해결할 때 나는...", a: "과거의 경험과 검증된 방법을 활용한다", b: "새로운 방법과 아이디어를 먼저 떠올린다", dim: "SN" },
-  { text: "누군가와 의견이 다를 때 나는...", a: "논리적으로 내 입장을 설명하고 설득한다", b: "상대방의 감정을 배려하며 조율하려 한다", dim: "TF" },
-  { text: "프로젝트를 시작할 때 나는...", a: "전체 계획을 먼저 세운 후 실행한다", b: "일단 시작하고 진행하면서 방향을 잡는다", dim: "JP" },
-  { text: "친구들 사이에서 나는...", a: "먼저 말을 걸고 분위기를 이끄는 편이다", b: "주로 듣고 필요할 때 말하는 편이다", dim: "EI" },
-  { text: "미래에 대해 생각할 때 나는...", a: "현실적이고 실현 가능한 것에 집중한다", b: "아직 일어나지 않은 가능성을 상상한다", dim: "SN" },
-  { text: "친구가 고민을 털어놓을 때 나는...", a: "해결책을 찾아주려 한다", b: "공감하고 감정을 받아줌으로써 위로한다", dim: "TF" },
-  { text: "마감 기한이 있을 때 나는...", a: "미리미리 끝내두는 편이다", b: "데드라인이 가까워질수록 집중력이 오른다", dim: "JP" },
-  { text: "낯선 환경에 처했을 때 나는...", a: "빨리 적응하고 새로운 사람과 어울린다", b: "처음엔 관찰하고 천천히 적응하는 편이다", dim: "EI" },
-  { text: "무언가를 설명할 때 나는...", a: "구체적인 예시와 단계별 설명을 선호한다", b: "개념과 원리, 연결고리를 중심으로 설명한다", dim: "SN" },
-  { text: "갈등 상황에서 나는...", a: "옳고 그름을 따지는 게 더 중요하다", b: "서로의 관계를 지키는 게 더 중요하다", dim: "TF" },
-  { text: "여행을 갈 때 나는...", a: "일정과 숙소를 미리 예약해 두는 편이다", b: "현지에서 즉흥적으로 정하는 게 재밌다", dim: "JP" },
-  { text: "에너지를 충전하는 방법은...", a: "사람들과 어울리거나 활동적인 일을 한다", b: "조용히 혼자만의 시간을 갖는다", dim: "EI" },
-  { text: "아이디어를 낼 때 나는...", a: "실제로 적용 가능한 아이디어를 낸다", b: "독창적이고 참신한 아이디어를 선호한다", dim: "SN" },
-  { text: "중요한 결정을 내릴 때 나는...", a: "데이터와 논리를 기반으로 판단한다", b: "직관과 느낌도 중요하게 고려한다", dim: "TF" },
+  { text:"파티나 모임에서 나는...", a:"다양한 사람들과 어울리며 에너지를 얻는다", b:"소수의 친한 사람들과 대화하거나 혼자 있고 싶다", dim:"EI" },
+  { text:"새로운 정보를 접할 때 나는...", a:"구체적인 사실과 세부 사항에 집중한다", b:"큰 그림과 가능성에 더 관심이 간다", dim:"SN" },
+  { text:"결정을 내릴 때 나는...", a:"논리와 객관적 분석을 중시한다", b:"사람들의 감정과 가치관을 고려한다", dim:"TF" },
+  { text:"일상에서 나는...", a:"계획을 세우고 정해진 대로 움직이는 게 편하다", b:"상황에 따라 유연하게 대처하는 걸 선호한다", dim:"JP" },
+  { text:"주말 계획이 생겼을 때 나는...", a:"미리 정해두고 준비하는 편이다", b:"즉흥적으로 결정하는 걸 즐긴다", dim:"JP" },
+  { text:"혼자 있는 시간이 생기면 나는...", a:"밖에 나가거나 사람을 만나고 싶다", b:"혼자만의 시간을 충전의 기회로 삼는다", dim:"EI" },
+  { text:"문제를 해결할 때 나는...", a:"과거의 경험과 검증된 방법을 활용한다", b:"새로운 방법과 아이디어를 먼저 떠올린다", dim:"SN" },
+  { text:"누군가와 의견이 다를 때 나는...", a:"논리적으로 내 입장을 설명하고 설득한다", b:"상대방의 감정을 배려하며 조율하려 한다", dim:"TF" },
+  { text:"프로젝트를 시작할 때 나는...", a:"전체 계획을 먼저 세운 후 실행한다", b:"일단 시작하고 진행하면서 방향을 잡는다", dim:"JP" },
+  { text:"친구들 사이에서 나는...", a:"먼저 말을 걸고 분위기를 이끄는 편이다", b:"주로 듣고 필요할 때 말하는 편이다", dim:"EI" },
+  { text:"미래에 대해 생각할 때 나는...", a:"현실적이고 실현 가능한 것에 집중한다", b:"아직 일어나지 않은 가능성을 상상한다", dim:"SN" },
+  { text:"친구가 고민을 털어놓을 때 나는...", a:"해결책을 찾아주려 한다", b:"공감하고 감정을 받아줌으로써 위로한다", dim:"TF" },
+  { text:"마감 기한이 있을 때 나는...", a:"미리미리 끝내두는 편이다", b:"데드라인이 가까워질수록 집중력이 오른다", dim:"JP" },
+  { text:"낯선 환경에 처했을 때 나는...", a:"빨리 적응하고 새로운 사람과 어울린다", b:"처음엔 관찰하고 천천히 적응하는 편이다", dim:"EI" },
+  { text:"무언가를 설명할 때 나는...", a:"구체적인 예시와 단계별 설명을 선호한다", b:"개념과 원리, 연결고리를 중심으로 설명한다", dim:"SN" },
+  { text:"갈등 상황에서 나는...", a:"옳고 그름을 따지는 게 더 중요하다", b:"서로의 관계를 지키는 게 더 중요하다", dim:"TF" },
+  { text:"여행을 갈 때 나는...", a:"일정과 숙소를 미리 예약해 두는 편이다", b:"현지에서 즉흥적으로 정하는 게 재밌다", dim:"JP" },
+  { text:"에너지를 충전하는 방법은...", a:"사람들과 어울리거나 활동적인 일을 한다", b:"조용히 혼자만의 시간을 갖는다", dim:"EI" },
+  { text:"아이디어를 낼 때 나는...", a:"실제로 적용 가능한 아이디어를 낸다", b:"독창적이고 참신한 아이디어를 선호한다", dim:"SN" },
+  { text:"중요한 결정을 내릴 때 나는...", a:"데이터와 논리를 기반으로 판단한다", b:"직관과 느낌도 중요하게 고려한다", dim:"TF" },
 ];
 
 const mbtiInfo = {
-  INTJ: { name: "전략가", desc: "독립적이고 분석적인 사고를 가진 전략가. 목표를 향해 체계적으로 나아가며, 높은 기준을 스스로에게 설정합니다. 드물지만 강력한 리더십을 발휘합니다.", strengths: ["전략적 사고", "독립심", "목표 지향", "분석력", "결단력", "자기 개발"] },
-  INTP: { name: "논리술사", desc: "지식에 대한 끝없는 갈증을 가진 사색가. 복잡한 문제를 분석하고 이론을 발전시키는 것을 즐기며, 독창적인 해결책을 찾아냅니다.", strengths: ["논리적 사고", "창의성", "객관성", "이론 탐구", "유연한 사고", "독립성"] },
-  ENTJ: { name: "통솔자", desc: "타고난 리더십을 가진 통솔자. 명확한 비전을 가지고 사람들을 이끌며, 목표 달성을 위해 효율적으로 계획하고 실행합니다.", strengths: ["리더십", "자신감", "전략 수립", "효율성", "결단력", "카리스마"] },
-  ENTP: { name: "변론가", desc: "아이디어와 토론을 즐기는 혁신가. 기존 관념에 도전하고 새로운 가능성을 탐구하며, 창의적인 문제 해결 능력이 뛰어납니다.", strengths: ["창의성", "토론 능력", "빠른 사고", "다재다능", "혁신성", "유머감각"] },
-  INFJ: { name: "옹호자", desc: "깊은 통찰력과 공감 능력을 가진 이상주의자. 타인을 돕고 세상을 더 나은 곳으로 만들려는 강한 열망을 품고 있습니다.", strengths: ["통찰력", "공감 능력", "헌신", "창의성", "결단력", "비전"] },
-  INFP: { name: "중재자", desc: "가치와 이상을 중시하는 몽상가. 진정성 있는 삶을 추구하며, 타인의 감정을 깊이 이해하고 창의적인 방식으로 자신을 표현합니다.", strengths: ["공감 능력", "창의성", "적응력", "이상주의", "헌신", "개방성"] },
-  ENFJ: { name: "선도자", desc: "카리스마 있는 리더이자 영감을 주는 존재. 사람들의 잠재력을 발견하고 이끌어내는 데 탁월하며, 공동체의 성장을 위해 헌신합니다.", strengths: ["리더십", "공감 능력", "소통력", "조직력", "열정", "신뢰성"] },
-  ENFP: { name: "활동가", desc: "열정적이고 창의적인 자유로운 영혼. 새로운 아이디어와 가능성에 흥분하며, 사람들과 깊은 연결을 맺고 세상에 긍정적인 영향을 미치려 합니다.", strengths: ["창의성", "열정", "소통력", "공감 능력", "적응력", "낙관성"] },
-  ISTJ: { name: "현실주의자", desc: "믿음직하고 성실한 실용주의자. 전통과 질서를 중시하며, 맡은 일을 끝까지 완수하는 책임감과 신뢰성을 갖추고 있습니다.", strengths: ["책임감", "성실함", "분석력", "인내심", "신뢰성", "체계성"] },
-  ISFJ: { name: "수호자", desc: "따뜻하고 헌신적인 보호자. 타인을 돌보고 지원하는 데 큰 기쁨을 느끼며, 조화로운 환경을 만들기 위해 묵묵히 노력합니다.", strengths: ["배려심", "신뢰성", "인내심", "세심함", "협동심", "헌신"] },
-  ESTJ: { name: "경영자", desc: "질서와 규칙을 중시하는 관리자. 명확한 기준과 체계를 바탕으로 조직을 이끌며, 목표를 효율적으로 달성하는 데 탁월합니다.", strengths: ["리더십", "조직력", "결단력", "신뢰성", "실용성", "헌신"] },
-  ESFJ: { name: "집정관", desc: "사교적이고 돌봄을 실천하는 조화주의자. 사람들과의 관계를 소중히 여기며, 주변 사람들이 행복하고 안정되도록 돕는 데 헌신합니다.", strengths: ["배려심", "소통력", "협동심", "성실함", "신뢰성", "실용성"] },
-  ISTP: { name: "만능재주꾼", desc: "논리적이고 실용적인 장인. 어떻게 사물이 작동하는지 이해하고 싶어하며, 문제가 생기면 침착하게 최선의 해결책을 찾아냅니다.", strengths: ["분석력", "실용성", "침착함", "독립심", "적응력", "기술력"] },
-  ISFP: { name: "모험가", desc: "섬세하고 예술적 감각이 뛰어난 탐험가. 현재 순간을 소중히 여기며, 자신만의 방식으로 아름다움과 의미를 표현합니다.", strengths: ["창의성", "공감 능력", "개방성", "적응력", "호기심", "진정성"] },
-  ESTP: { name: "사업가", desc: "에너지 넘치고 행동 지향적인 실용주의자. 지금 이 순간에 집중하며, 문제를 직접 부딪히며 해결하는 것을 즐깁니다.", strengths: ["행동력", "적응력", "현실감각", "사교성", "관찰력", "결단력"] },
-  ESFP: { name: "연예인", desc: "자발적이고 활기찬 오락인. 삶을 축제처럼 즐기며, 주변 사람들에게 기쁨과 에너지를 전파합니다. 현재 순간을 최대한 즐깁니다.", strengths: ["사교성", "열정", "낙관성", "적응력", "관대함", "현실감각"] },
+  INTJ:{ name:"전략가", desc:"독립적이고 분석적인 사고를 가진 전략가. 목표를 향해 체계적으로 나아가며, 높은 기준을 스스로에게 설정합니다. 드물지만 강력한 리더십을 발휘합니다.", strengths:["전략적 사고","독립심","목표 지향","분석력","결단력","자기 개발"] },
+  INTP:{ name:"논리술사", desc:"지식에 대한 끝없는 갈증을 가진 사색가. 복잡한 문제를 분석하고 이론을 발전시키는 것을 즐기며, 독창적인 해결책을 찾아냅니다.", strengths:["논리적 사고","창의성","객관성","이론 탐구","유연한 사고","독립성"] },
+  ENTJ:{ name:"통솔자", desc:"타고난 리더십을 가진 통솔자. 명확한 비전을 가지고 사람들을 이끌며, 목표 달성을 위해 효율적으로 계획하고 실행합니다.", strengths:["리더십","자신감","전략 수립","효율성","결단력","카리스마"] },
+  ENTP:{ name:"변론가", desc:"아이디어와 토론을 즐기는 혁신가. 기존 관념에 도전하고 새로운 가능성을 탐구하며, 창의적인 문제 해결 능력이 뛰어납니다.", strengths:["창의성","토론 능력","빠른 사고","다재다능","혁신성","유머감각"] },
+  INFJ:{ name:"옹호자", desc:"깊은 통찰력과 공감 능력을 가진 이상주의자. 타인을 돕고 세상을 더 나은 곳으로 만들려는 강한 열망을 품고 있습니다.", strengths:["통찰력","공감 능력","헌신","창의성","결단력","비전"] },
+  INFP:{ name:"중재자", desc:"가치와 이상을 중시하는 몽상가. 진정성 있는 삶을 추구하며, 타인의 감정을 깊이 이해하고 창의적인 방식으로 자신을 표현합니다.", strengths:["공감 능력","창의성","적응력","이상주의","헌신","개방성"] },
+  ENFJ:{ name:"선도자", desc:"카리스마 있는 리더이자 영감을 주는 존재. 사람들의 잠재력을 발견하고 이끌어내는 데 탁월하며, 공동체의 성장을 위해 헌신합니다.", strengths:["리더십","공감 능력","소통력","조직력","열정","신뢰성"] },
+  ENFP:{ name:"활동가", desc:"열정적이고 창의적인 자유로운 영혼. 새로운 아이디어와 가능성에 흥분하며, 사람들과 깊은 연결을 맺고 세상에 긍정적인 영향을 미치려 합니다.", strengths:["창의성","열정","소통력","공감 능력","적응력","낙관성"] },
+  ISTJ:{ name:"현실주의자", desc:"믿음직하고 성실한 실용주의자. 전통과 질서를 중시하며, 맡은 일을 끝까지 완수하는 책임감과 신뢰성을 갖추고 있습니다.", strengths:["책임감","성실함","분석력","인내심","신뢰성","체계성"] },
+  ISFJ:{ name:"수호자", desc:"따뜻하고 헌신적인 보호자. 타인을 돌보고 지원하는 데 큰 기쁨을 느끼며, 조화로운 환경을 만들기 위해 묵묵히 노력합니다.", strengths:["배려심","신뢰성","인내심","세심함","협동심","헌신"] },
+  ESTJ:{ name:"경영자", desc:"질서와 규칙을 중시하는 관리자. 명확한 기준과 체계를 바탕으로 조직을 이끌며, 목표를 효율적으로 달성하는 데 탁월합니다.", strengths:["리더십","조직력","결단력","신뢰성","실용성","헌신"] },
+  ESFJ:{ name:"집정관", desc:"사교적이고 돌봄을 실천하는 조화주의자. 사람들과의 관계를 소중히 여기며, 주변 사람들이 행복하고 안정되도록 돕는 데 헌신합니다.", strengths:["배려심","소통력","협동심","성실함","신뢰성","실용성"] },
+  ISTP:{ name:"만능재주꾼", desc:"논리적이고 실용적인 장인. 어떻게 사물이 작동하는지 이해하고 싶어하며, 문제가 생기면 침착하게 최선의 해결책을 찾아냅니다.", strengths:["분석력","실용성","침착함","독립심","적응력","기술력"] },
+  ISFP:{ name:"모험가", desc:"섬세하고 예술적 감각이 뛰어난 탐험가. 현재 순간을 소중히 여기며, 자신만의 방식으로 아름다움과 의미를 표현합니다.", strengths:["창의성","공감 능력","개방성","적응력","호기심","진정성"] },
+  ESTP:{ name:"사업가", desc:"에너지 넘치고 행동 지향적인 실용주의자. 지금 이 순간에 집중하며, 문제를 직접 부딪히며 해결하는 것을 즐깁니다.", strengths:["행동력","적응력","현실감각","사교성","관찰력","결단력"] },
+  ESFP:{ name:"연예인", desc:"자발적이고 활기찬 오락인. 삶을 축제처럼 즐기며, 주변 사람들에게 기쁨과 에너지를 전파합니다. 현재 순간을 최대한 즐깁니다.", strengths:["사교성","열정","낙관성","적응력","관대함","현실감각"] },
+};
+
+const traitColors = {
+  EI: 'linear-gradient(90deg, #7c6dfa, #c8f560)',
+  SN: 'linear-gradient(90deg, #7c6dfa, #1D9E75)',
+  TF: 'linear-gradient(90deg, #7c6dfa, #D85A30)',
+  JP: 'linear-gradient(90deg, #7c6dfa, #BA7517)',
 };
 
 let current = 0;
 let answers = {};
 
+function updateProgress() {
+  const pct = Math.round((current / questions.length) * 100);
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('progress-count').textContent = current + ' / ' + questions.length;
+}
+
 function getScores() {
   let E=0,I=0,S=0,N=0,T=0,F=0,J=0,P=0;
   questions.forEach((q,i) => {
     const ans = answers[i];
-    if(ans === undefined) return;
+    if(ans===undefined) return;
     if(q.dim==='EI'){ ans==='a'?E++:I++; }
     else if(q.dim==='SN'){ ans==='a'?S++:N++; }
     else if(q.dim==='TF'){ ans==='a'?T++:F++; }
@@ -97,56 +456,81 @@ function getMBTI(s) {
 function pct(a,b){ const t=a+b; return t===0?50:Math.round(a/t*100); }
 
 function renderQuestion() {
+  updateProgress();
   const q = questions[current];
-  const total = questions.length;
-  const progress = Math.round((current/total)*100);
+  const hasAns = answers[current] !== undefined;
   document.getElementById('app').innerHTML = `
-    <div class="progress-bar"><div class="progress-fill" style="width:${progress}%"></div></div>
-    <div class="q-num">${current+1} / ${total}</div>
-    <div class="q-text">${q.text}</div>
-    <div class="options">
-      <button class="opt-btn${answers[current]==='a'?' selected':''}" onclick="select('a')">${q.a}</button>
-      <button class="opt-btn${answers[current]==='b'?' selected':''}" onclick="select('b')">${q.b}</button>
+    <div class="q-card">
+      <div class="q-dim">${dimLabel[q.dim]}</div>
+      <div class="q-text">${q.text}</div>
+      <div class="options">
+        <button class="opt-btn${answers[current]==='a'?' selected':''}" onclick="select('a')">${q.a}</button>
+        <button class="opt-btn${answers[current]==='b'?' selected':''}" onclick="select('b')">${q.b}</button>
+      </div>
     </div>
-    <div class="nav">
-      ${current>0?'<button class="prev" onclick="prev()">이전</button>':''}
-      <button class="next" onclick="next()" ${answers[current]===undefined?'disabled style="opacity:0.5;cursor:not-allowed"':''}>
-        ${current===total-1?'결과 보기':'다음'}
+    <div class="nav-btns">
+      ${current > 0 ? '<button class="btn-prev" onclick="prev()">← 이전</button>' : ''}
+      <button class="btn-next" onclick="next()" ${!hasAns ? 'disabled' : ''}>
+        ${current === questions.length - 1 ? '결과 보기 →' : '다음 →'}
       </button>
     </div>
   `;
 }
 
 function renderResult() {
+  document.getElementById('progress-fill').style.width = '100%';
+  document.getElementById('progress-count').textContent = questions.length + ' / ' + questions.length;
+  document.getElementById('header').style.display = 'none';
+
   const s = getScores();
   const type = getMBTI(s);
   const info = mbtiInfo[type];
   const ep = pct(s.E,s.I), sp = pct(s.S,s.N), tp = pct(s.T,s.F), jp = pct(s.J,s.P);
+
   const traits = [
-    { l: type[0]==='E'?'외향(E)':'내향(I)', p: type[0]==='E'?ep:100-ep, color:'#7F77DD' },
-    { l: type[1]==='S'?'감각(S)':'직관(N)', p: type[1]==='S'?sp:100-sp, color:'#1D9E75' },
-    { l: type[2]==='T'?'사고(T)':'감정(F)', p: type[2]==='T'?tp:100-tp, color:'#D85A30' },
-    { l: type[3]==='J'?'판단(J)':'인식(P)', p: type[3]==='J'?jp:100-jp, color:'#BA7517' },
+    { label: type[0]==='E' ? '외향 (E)' : '내향 (I)', p: type[0]==='E'?ep:100-ep, dim:'EI' },
+    { label: type[1]==='S' ? '감각 (S)' : '직관 (N)', p: type[1]==='S'?sp:100-sp, dim:'SN' },
+    { label: type[2]==='T' ? '사고 (T)' : '감정 (F)', p: type[2]==='T'?tp:100-tp, dim:'TF' },
+    { label: type[3]==='J' ? '판단 (J)' : '인식 (P)', p: type[3]==='J'?jp:100-jp, dim:'JP' },
   ];
+
   document.getElementById('app').innerHTML = `
-    <div class="result-card">
-      <div class="mbti-type">${type}</div>
-      <div class="mbti-name">${info.name}</div>
-      ${traits.map(t=>`
-        <div class="trait-row">
-          <div class="trait-label">${t.l}</div>
-          <div class="trait-bar-wrap"><div class="trait-bar" style="width:${t.p}%;background:${t.color}"></div></div>
-          <div class="trait-pct">${t.p}%</div>
+    <div class="result-wrap">
+      <div class="result-hero">
+        <div class="result-type">${type}</div>
+        <div class="result-name">${info.name}</div>
+        <div class="result-desc">${info.desc}</div>
+      </div>
+
+      <div class="result-traits">
+        <div class="section-label">// 성향 분석</div>
+        ${traits.map(t => `
+          <div class="trait-row">
+            <div class="trait-label">${t.label}</div>
+            <div class="trait-bar-wrap">
+              <div class="trait-bar" data-width="${t.p}" style="background:${traitColors[t.dim]}"></div>
+            </div>
+            <div class="trait-pct">${t.p}%</div>
+          </div>
+        `).join('')}
+      </div>
+
+      <div class="result-strengths">
+        <div class="section-label">// 주요 강점</div>
+        <div class="strengths-grid">
+          ${info.strengths.map(s => `<div class="strength-item">${s}</div>`).join('')}
         </div>
-      `).join('')}
-      <div class="desc">${info.desc}</div>
+      </div>
+
+      <button class="btn-restart" onclick="restart()">↺ 다시 테스트하기</button>
     </div>
-    <div class="result-card">
-      <div style="font-size:14px;font-weight:500;color:var(--color-text-secondary);margin-bottom:10px;">주요 강점</div>
-      <div class="strengths">${info.strengths.map(s=>`<div class="strength-item">${s}</div>`).join('')}</div>
-    </div>
-    <button class="restart-btn" onclick="restart()">다시 테스트하기</button>
   `;
+
+  requestAnimationFrame(() => {
+    document.querySelectorAll('.trait-bar').forEach(bar => {
+      bar.style.width = bar.dataset.width + '%';
+    });
+  });
 }
 
 window.select = function(v) {
@@ -164,8 +548,11 @@ window.prev = function() {
 };
 window.restart = function() {
   current=0; answers={};
+  document.getElementById('header').style.display = '';
   renderQuestion();
 };
 
 renderQuestion();
 </script>
+</body>
+</html>
