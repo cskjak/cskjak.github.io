@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
@@ -221,6 +221,10 @@
         <label>일일 목표 걸음 수</label>
         <input type="number" id="step-goal-input" placeholder="10000" min="1000" max="99999" step="500" value="10000" onchange="saveStepGoal()">
       </div>
+      <div class="form-group" style="margin-bottom:12px">
+        <label>키 (cm)</label>
+        <input type="number" id="step-height-input" placeholder="170" min="100" max="250" step="1" value="170" onchange="saveHeight()">
+      </div>
       <button class="btn" onclick="resetTodaySteps()">오늘 걸음 초기화</button>
     </div>
     <div class="card">
@@ -331,7 +335,9 @@ function showTab(t){
 const STEP_STORE='step_data_v1',STEP_GOAL_KEY='step_goal_v1';
 let stepData=JSON.parse(localStorage.getItem(STEP_STORE)||'{}');
 let stepGoal=parseInt(localStorage.getItem(STEP_GOAL_KEY)||'10000');
-let stepCounting=false,isAbove=false,lastStepTs=0;
+let stepCounting=false,isAbove=false,lastStepTs=0,smoothMag=10;
+const STEP_STORE_HEIGHT='step_height_v1';
+let userHeight=parseInt(localStorage.getItem('step_height_v1')||'170');
 function getTodayKey(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
 function getTodaySteps(){return stepData[getTodayKey()]||0;}
 function addOneStep(){
@@ -343,9 +349,11 @@ function addOneStep(){
 function handleMotion(e){
   if(!stepCounting)return;
   const a=e.accelerationIncludingGravity;if(!a||a.x===null)return;
-  const mag=Math.sqrt((a.x||0)**2+(a.y||0)**2+(a.z||0)**2),t=Date.now();
-  if(!isAbove&&mag>12){isAbove=true;}
-  else if(isAbove&&mag<10){isAbove=false;if(t-lastStepTs>350){lastStepTs=t;addOneStep();}}
+  const raw=Math.sqrt((a.x||0)**2+(a.y||0)**2+(a.z||0)**2);
+  smoothMag=smoothMag*0.75+raw*0.25;
+  const t=Date.now();
+  if(!isAbove&&smoothMag>11.5){isAbove=true;}
+  else if(isAbove&&smoothMag<10.2){isAbove=false;if(t-lastStepTs>400){lastStepTs=t;addOneStep();}}
 }
 async function toggleStep(){
   const btn=document.getElementById('step-btn'),msg=document.getElementById('step-msg');
@@ -366,6 +374,7 @@ function saveStepGoal(){
   const v=parseInt(document.getElementById('step-goal-input').value);
   if(v>=100){stepGoal=v;localStorage.setItem(STEP_GOAL_KEY,stepGoal);updateStepUI();toast('목표 저장됨 ✅');}
 }
+function saveHeight(){const v=parseInt(document.getElementById('step-height-input').value);if(v>=100&&v<=250){userHeight=v;localStorage.setItem(STEP_STORE_HEIGHT,userHeight);updateStepUI();toast('키 저장됨 ✅');}}
 function resetTodaySteps(){
   if(!confirm('오늘 걸음 수를 초기화할까요?'))return;
   stepData[getTodayKey()]=0;localStorage.setItem(STEP_STORE,JSON.stringify(stepData));
@@ -377,9 +386,10 @@ function updateStepUI(){
   document.getElementById('step-goal-sub').textContent='목표 '+goal.toLocaleString();
   ring.style.strokeDashoffset=offset;ring.style.stroke=steps>=goal?'#EF9F27':'var(--accent)';
   document.getElementById('step-kcal').textContent=Math.round(steps*0.04);
-  document.getElementById('step-km').textContent=(steps*0.00075).toFixed(2);
+  document.getElementById('step-km').textContent=(steps*userHeight*0.414/100000).toFixed(2);
   document.getElementById('step-pct').textContent=Math.round(pct*100)+'%';
   document.getElementById('step-goal-input').value=goal;
+  document.getElementById('step-height-input').value=userHeight;
   renderStepHistory();
 }
 function renderStepHistory(){
