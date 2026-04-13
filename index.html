@@ -134,17 +134,24 @@
     0%, 100% { opacity: 1; } 50% { opacity: 0.3; }
   }
   .hero h1 {
-    font-family: 'DM Serif Display', serif;
     font-size: clamp(3.5rem, 8vw, 7rem);
-    line-height: 1;
+    line-height: 1.05;
     margin-bottom: 1.5rem;
     letter-spacing: -0.02em;
     opacity: 0; animation: heroEnter 0.8s ease 0.35s forwards;
   }
+  .hero h1 .hero-name {
+    font-family: 'Pretendard', sans-serif;
+    font-weight: 700;
+    display: block;
+    letter-spacing: -0.03em;
+  }
   .hero h1 em {
+    font-family: 'DM Serif Display', serif;
     font-style: italic;
     color: transparent;
     -webkit-text-stroke: 1px rgba(255,255,255,0.4);
+    display: block;
   }
   .hero-desc {
     font-size: 1.1rem; color: var(--muted); line-height: 1.8;
@@ -425,7 +432,7 @@
   <div class="hero-grid"></div>
   <div class="hero-content">
     <div class="hero-tag">풀스택 개발자 지망생</div>
-    <h1>이의찬,<br><em>Developer.</em></h1>
+    <h1><span class="hero-name">이의찬,</span><em>Developer.</em></h1>
     <p class="hero-desc">아이디어를 코드로 현실로 만드는 개발자 지망생.<br>프론트부터 백엔드, 클라우드까지 — 끝없이 성장 중입니다.</p>
     <div class="hero-cta">
       <a href="#projects" class="btn btn-primary">프로젝트 보기 →</a>
