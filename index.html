@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>이의찬 — Developer Portfolio</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&family=Pretendard:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/devicon.min.css">
 <style>
   :root {
     --bg: #0a0a0f;
@@ -27,23 +28,28 @@
     cursor: none;
   }
 
-  /* Custom cursor */
+  /* ── Custom cursor ── */
   .cursor {
     position: fixed; width: 10px; height: 10px;
     background: var(--accent); border-radius: 50%;
     pointer-events: none; z-index: 9999;
     transform: translate(-50%,-50%);
-    transition: transform 0.1s;
+    transition: transform 0.1s, width 0.2s, height 0.2s;
   }
   .cursor-ring {
     position: fixed; width: 36px; height: 36px;
     border: 1px solid rgba(200,245,96,0.4); border-radius: 50%;
     pointer-events: none; z-index: 9998;
     transform: translate(-50%,-50%);
-    transition: all 0.15s ease;
+    transition: all 0.18s ease;
+  }
+  .cursor-ring.hovered {
+    width: 56px; height: 56px;
+    border-color: rgba(200,245,96,0.7);
+    background: rgba(200,245,96,0.05);
   }
 
-  /* Nav */
+  /* ── Nav ── */
   nav {
     position: fixed; top: 0; left: 0; right: 0; z-index: 100;
     display: flex; justify-content: space-between; align-items: center;
@@ -68,7 +74,22 @@
   }
   .nav-links a:hover { color: var(--text); }
 
-  /* Hero */
+  /* 햄버거 버튼 */
+  .nav-toggle {
+    display: none;
+    flex-direction: column; gap: 5px;
+    background: none; border: none; cursor: pointer; padding: 4px;
+  }
+  .nav-toggle span {
+    display: block; width: 22px; height: 2px;
+    background: var(--text); border-radius: 2px;
+    transition: all 0.3s;
+  }
+  .nav-toggle.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+  .nav-toggle.open span:nth-child(2) { opacity: 0; }
+  .nav-toggle.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+  /* ── Hero ── */
   .hero {
     min-height: 100vh;
     display: flex; align-items: center;
@@ -87,7 +108,14 @@
     background-size: 60px 60px;
     mask-image: radial-gradient(ellipse at center, black 0%, transparent 70%);
   }
-  .hero-content { position: relative; z-index: 1; max-width: 900px; }
+  .hero-content {
+    position: relative; z-index: 1; max-width: 900px;
+    opacity: 0; transform: translateY(24px);
+    animation: heroEnter 0.9s cubic-bezier(0.22,1,0.36,1) 0.2s forwards;
+  }
+  @keyframes heroEnter {
+    to { opacity: 1; transform: translateY(0); }
+  }
   .hero-tag {
     display: inline-flex; align-items: center; gap: 8px;
     font-family: 'DM Mono', monospace; font-size: 12px;
@@ -95,6 +123,7 @@
     margin-bottom: 2rem;
     padding: 6px 14px; border: 1px solid rgba(200,245,96,0.3);
     border-radius: 100px;
+    opacity: 0; animation: heroEnter 0.7s ease 0.5s forwards;
   }
   .hero-tag::before {
     content: ''; width: 6px; height: 6px;
@@ -110,6 +139,7 @@
     line-height: 1;
     margin-bottom: 1.5rem;
     letter-spacing: -0.02em;
+    opacity: 0; animation: heroEnter 0.8s ease 0.35s forwards;
   }
   .hero h1 em {
     font-style: italic;
@@ -119,9 +149,11 @@
   .hero-desc {
     font-size: 1.1rem; color: var(--muted); line-height: 1.8;
     max-width: 500px; margin-bottom: 3rem;
+    opacity: 0; animation: heroEnter 0.8s ease 0.5s forwards;
   }
   .hero-cta {
     display: flex; gap: 1rem; flex-wrap: wrap;
+    opacity: 0; animation: heroEnter 0.8s ease 0.65s forwards;
   }
   .btn {
     display: inline-flex; align-items: center; gap: 8px;
@@ -147,6 +179,7 @@
     font-family: 'DM Mono', monospace; font-size: 11px;
     color: var(--muted); letter-spacing: 0.1em;
     animation: float 3s ease-in-out infinite;
+    opacity: 0; animation: heroEnter 1s ease 1s forwards, float 3s ease-in-out 1.5s infinite;
   }
   .scroll-indicator::after {
     content: ''; width: 1px; height: 50px;
@@ -154,7 +187,7 @@
   }
   @keyframes float { 0%,100%{transform:translateX(-50%) translateY(0)} 50%{transform:translateX(-50%) translateY(-8px)} }
 
-  /* Section */
+  /* ── Section ── */
   section { padding: 8rem 4rem; }
   .section-tag {
     font-family: 'DM Mono', monospace; font-size: 11px;
@@ -167,7 +200,7 @@
     line-height: 1.1; margin-bottom: 4rem;
   }
 
-  /* Skills */
+  /* ── Skills ── */
   .skills-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -178,6 +211,7 @@
     background: var(--bg); padding: 2rem;
     transition: background 0.2s;
     position: relative; overflow: hidden;
+    display: flex; flex-direction: column;
   }
   .skill-item::before {
     content: ''; position: absolute;
@@ -188,14 +222,20 @@
   }
   .skill-item:hover::before { transform: scaleX(1); }
   .skill-item:hover { background: var(--card); }
-  .skill-icon { font-size: 1.5rem; margin-bottom: 1rem; }
+  .skill-icon {
+    font-size: 1.8rem; margin-bottom: 1rem; line-height: 1;
+    display: flex; align-items: center;
+  }
+  .skill-icon i { font-size: 1.8rem; }
   .skill-name {
     font-size: 15px; font-weight: 500; margin-bottom: 0.5rem;
   }
   .skill-level {
     font-family: 'DM Mono', monospace; font-size: 11px;
-    color: var(--accent); letter-spacing: 0.1em;
+    letter-spacing: 0.1em;
   }
+  .skill-level.learning { color: var(--accent); }
+  .skill-level.upcoming { color: var(--muted); }
   .skill-bar {
     height: 2px; background: var(--border); margin-top: 1rem; border-radius: 1px;
   }
@@ -205,8 +245,11 @@
     transition: width 1.5s ease;
     width: 0;
   }
+  .skill-fill.upcoming-bar {
+    background: var(--muted);
+  }
 
-  /* Projects */
+  /* ── Projects ── */
   .projects-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
@@ -219,8 +262,9 @@
     transition: all 0.3s; position: relative;
   }
   .project-card:hover {
-    border-color: rgba(255,255,255,0.2);
+    border-color: rgba(200,245,96,0.25);
     transform: translateY(-4px);
+    box-shadow: 0 8px 40px rgba(200,245,96,0.08), 0 0 0 1px rgba(200,245,96,0.08);
   }
   .project-thumb {
     height: 200px; position: relative; overflow: hidden;
@@ -272,7 +316,7 @@
   }
   .project-link:hover { gap: 10px; }
 
-  /* Timeline */
+  /* ── Timeline ── */
   .timeline { position: relative; }
   .timeline::before {
     content: ''; position: absolute;
@@ -294,7 +338,7 @@
   .timeline-title { font-size: 17px; font-weight: 500; margin-bottom: 4px; }
   .timeline-sub { font-size: 13px; color: var(--muted); line-height: 1.7; }
 
-  /* Contact */
+  /* ── Contact ── */
   .contact-grid {
     display: grid; grid-template-columns: 1fr 1fr; gap: 4rem;
     align-items: center;
@@ -322,7 +366,7 @@
   }
   .contact-link-text { font-family: 'DM Mono', monospace; font-size: 13px; }
 
-  /* Footer */
+  /* ── Footer ── */
   footer {
     padding: 2rem 4rem;
     border-top: 1px solid var(--border);
@@ -330,19 +374,31 @@
     font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted);
   }
 
-  /* Animations */
+  /* ── Animations ── */
   .fade-up {
     opacity: 0; transform: translateY(30px);
     transition: opacity 0.8s ease, transform 0.8s ease;
   }
   .fade-up.visible { opacity: 1; transform: translateY(0); }
 
+  /* ── Mobile ── */
   @media (max-width: 768px) {
     nav { padding: 1rem 1.5rem; }
+    .nav-toggle { display: flex; }
+    .nav-links {
+      display: none;
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(10,10,15,0.97);
+      backdrop-filter: blur(20px);
+      flex-direction: column; align-items: center; justify-content: center;
+      gap: 2.5rem; z-index: 99;
+    }
+    .nav-links.open { display: flex; }
+    .nav-links a { font-size: 20px; letter-spacing: 0.1em; }
     .hero { padding: 0 1.5rem; }
     section { padding: 5rem 1.5rem; }
     .contact-grid { grid-template-columns: 1fr; gap: 2rem; }
-    footer { flex-direction: column; gap: 0.5rem; text-align: center; }
+    footer { flex-direction: column; gap: 0.5rem; text-align: center; padding: 1.5rem; }
   }
 </style>
 </head>
@@ -353,12 +409,15 @@
 
 <nav id="nav">
   <div class="nav-logo">IC.DEV</div>
-  <div class="nav-links">
-    <a href="#skills">스킬</a>
-    <a href="#projects">프로젝트</a>
-    <a href="#about">경력</a>
-    <a href="#contact">연락처</a>
+  <div class="nav-links" id="nav-links">
+    <a href="#skills" onclick="closeNav()">스킬</a>
+    <a href="#projects" onclick="closeNav()">프로젝트</a>
+    <a href="#about" onclick="closeNav()">경력</a>
+    <a href="#contact" onclick="closeNav()">연락처</a>
   </div>
+  <button class="nav-toggle" id="nav-toggle" onclick="toggleNav()" aria-label="메뉴">
+    <span></span><span></span><span></span>
+  </button>
 </nav>
 
 <section class="hero">
@@ -381,70 +440,70 @@
   <h2 class="section-title fade-up">쓸 수 있는<br>기술들</h2>
   <div class="skills-grid fade-up">
     <div class="skill-item">
-      <div class="skill-icon">🌐</div>
+      <div class="skill-icon"><i class="devicon-html5-original colored"></i></div>
       <div class="skill-name">HTML / CSS</div>
-      <div class="skill-level">LEARNING</div>
+      <div class="skill-level learning">LEARNING</div>
       <div class="skill-bar"><div class="skill-fill" data-width="70"></div></div>
     </div>
     <div class="skill-item">
-      <div class="skill-icon">⚡</div>
+      <div class="skill-icon"><i class="devicon-javascript-plain colored"></i></div>
       <div class="skill-name">JavaScript</div>
-      <div class="skill-level">LEARNING</div>
+      <div class="skill-level learning">LEARNING</div>
       <div class="skill-bar"><div class="skill-fill" data-width="60"></div></div>
     </div>
     <div class="skill-item">
-      <div class="skill-icon">☕</div>
+      <div class="skill-icon"><i class="devicon-java-original colored"></i></div>
       <div class="skill-name">Java</div>
-      <div class="skill-level">UPCOMING</div>
-      <div class="skill-bar"><div class="skill-fill" data-width="20"></div></div>
+      <div class="skill-level upcoming">UPCOMING</div>
+      <div class="skill-bar"><div class="skill-fill upcoming-bar" data-width="20"></div></div>
     </div>
     <div class="skill-item">
-      <div class="skill-icon">🍃</div>
+      <div class="skill-icon"><i class="devicon-spring-original colored"></i></div>
       <div class="skill-name">Spring Boot</div>
-      <div class="skill-level">UPCOMING</div>
-      <div class="skill-bar"><div class="skill-fill" data-width="10"></div></div>
+      <div class="skill-level upcoming">UPCOMING</div>
+      <div class="skill-bar"><div class="skill-fill upcoming-bar" data-width="10"></div></div>
     </div>
     <div class="skill-item">
-      <div class="skill-icon">🐳</div>
+      <div class="skill-icon"><i class="devicon-docker-plain colored"></i></div>
       <div class="skill-name">Docker / Cloud</div>
-      <div class="skill-level">UPCOMING</div>
-      <div class="skill-bar"><div class="skill-fill" data-width="10"></div></div>
+      <div class="skill-level upcoming">UPCOMING</div>
+      <div class="skill-bar"><div class="skill-fill upcoming-bar" data-width="10"></div></div>
     </div>
     <div class="skill-item">
-      <div class="skill-icon">🤖</div>
+      <div class="skill-icon"><i class="devicon-amazonwebservices-plain-wordmark colored"></i></div>
       <div class="skill-name">AI / LLM</div>
-      <div class="skill-level">UPCOMING</div>
-      <div class="skill-bar"><div class="skill-fill" data-width="10"></div></div>
+      <div class="skill-level upcoming">UPCOMING</div>
+      <div class="skill-bar"><div class="skill-fill upcoming-bar" data-width="10"></div></div>
     </div>
     <div class="skill-item">
-      <div class="skill-icon">🐙</div>
+      <div class="skill-icon"><i class="devicon-git-plain colored"></i></div>
       <div class="skill-name">Git & GitHub</div>
-      <div class="skill-level">UPCOMING</div>
-      <div class="skill-bar"><div class="skill-fill" data-width="10"></div></div>
+      <div class="skill-level upcoming">UPCOMING</div>
+      <div class="skill-bar"><div class="skill-fill upcoming-bar" data-width="10"></div></div>
     </div>
     <div class="skill-item">
-      <div class="skill-icon">🗄️</div>
+      <div class="skill-icon"><i class="devicon-oracle-original colored"></i></div>
       <div class="skill-name">Database & Oracle</div>
-      <div class="skill-level">UPCOMING</div>
-      <div class="skill-bar"><div class="skill-fill" data-width="10"></div></div>
+      <div class="skill-level upcoming">UPCOMING</div>
+      <div class="skill-bar"><div class="skill-fill upcoming-bar" data-width="10"></div></div>
     </div>
     <div class="skill-item">
-      <div class="skill-icon">🅱️</div>
-      <div class="skill-name">Bootstrap5</div>
-      <div class="skill-level">UPCOMING</div>
-      <div class="skill-bar"><div class="skill-fill" data-width="10"></div></div>
+      <div class="skill-icon"><i class="devicon-bootstrap-plain colored"></i></div>
+      <div class="skill-name">Bootstrap 5</div>
+      <div class="skill-level upcoming">UPCOMING</div>
+      <div class="skill-bar"><div class="skill-fill upcoming-bar" data-width="10"></div></div>
     </div>
     <div class="skill-item">
-      <div class="skill-icon">⚛️</div>
+      <div class="skill-icon"><i class="devicon-react-original colored"></i></div>
       <div class="skill-name">React</div>
-      <div class="skill-level">UPCOMING</div>
-      <div class="skill-bar"><div class="skill-fill" data-width="10"></div></div>
+      <div class="skill-level upcoming">UPCOMING</div>
+      <div class="skill-bar"><div class="skill-fill upcoming-bar" data-width="10"></div></div>
     </div>
     <div class="skill-item">
-      <div class="skill-icon">🔄</div>
-      <div class="skill-name">GitHub Actions & Jenkins CI/CD</div>
-      <div class="skill-level">UPCOMING</div>
-      <div class="skill-bar"><div class="skill-fill" data-width="10"></div></div>
+      <div class="skill-icon"><i class="devicon-jenkins-plain colored"></i></div>
+      <div class="skill-name">GitHub Actions & Jenkins</div>
+      <div class="skill-level upcoming">UPCOMING</div>
+      <div class="skill-bar"><div class="skill-fill upcoming-bar" data-width="10"></div></div>
     </div>
   </div>
 </section>
@@ -511,7 +570,6 @@
       <div class="timeline-title">풀스택 개발 부트캠프</div>
       <div class="timeline-sub">HTML/CSS, JavaScript, Java, Spring Boot, Docker, Cloud, AI/LLM 과정 수료 중. 체계적인 커리큘럼과 실전 프로젝트 중심 학습.</div>
     </div>
-
     <div class="timeline-item">
       <div class="timeline-dot"></div>
       <div class="timeline-date">10대 시절</div>
@@ -533,6 +591,10 @@
         <span class="contact-link-icon">✉️</span>
         <span class="contact-link-text">kgn4399@naver.com</span>
       </a>
+      <a href="https://github.com/cskjak" target="_blank" class="contact-link">
+        <span class="contact-link-icon"><i class="devicon-github-original" style="font-size:1.2rem"></i></span>
+        <span class="contact-link-text">github.com/cskjak</span>
+      </a>
     </div>
   </div>
 </section>
@@ -543,6 +605,7 @@
 </footer>
 
 <script>
+  // 커서
   const cursor = document.getElementById('cursor');
   const ring = document.getElementById('cursor-ring');
   document.addEventListener('mousemove', e => {
@@ -554,13 +617,36 @@
     }, 80);
   });
 
+  // 커서 hover 효과 — 링크·버튼 위에서 링이 커짐
+  const hoverTargets = document.querySelectorAll('a, button, .project-card, .skill-item, .contact-link');
+  hoverTargets.forEach(el => {
+    el.addEventListener('mouseenter', () => ring.classList.add('hovered'));
+    el.addEventListener('mouseleave', () => ring.classList.remove('hovered'));
+  });
+
+  // 네비게이션 스크롤 효과
   window.addEventListener('scroll', () => {
     document.getElementById('nav').classList.toggle('scrolled', window.scrollY > 50);
   });
 
+  // 햄버거 메뉴
+  function toggleNav() {
+    const toggle = document.getElementById('nav-toggle');
+    const links = document.getElementById('nav-links');
+    toggle.classList.toggle('open');
+    links.classList.toggle('open');
+  }
+  function closeNav() {
+    document.getElementById('nav-toggle').classList.remove('open');
+    document.getElementById('nav-links').classList.remove('open');
+  }
+  window.toggleNav = toggleNav;
+  window.closeNav = closeNav;
+
+  // 스크롤 fade-up + 스킬바 애니메이션
   const observer = new IntersectionObserver(entries => {
     entries.forEach(e => {
-      if(e.isIntersecting) {
+      if (e.isIntersecting) {
         e.target.classList.add('visible');
         e.target.querySelectorAll('.skill-fill').forEach(bar => {
           bar.style.width = bar.dataset.width + '%';
