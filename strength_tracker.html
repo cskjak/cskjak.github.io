@@ -335,7 +335,7 @@ function showTab(t){
 const STEP_STORE='step_data_v1',STEP_GOAL_KEY='step_goal_v1';
 let stepData=JSON.parse(localStorage.getItem(STEP_STORE)||'{}');
 let stepGoal=parseInt(localStorage.getItem(STEP_GOAL_KEY)||'10000');
-let stepCounting=false,isAbove=false,lastStepTs=0,smoothMag=10;
+let stepCounting=false,isAbove=false,lastStepTs=0,smoothMag=9.8,baseline=9.8;
 const STEP_STORE_HEIGHT='step_height_v1';
 let userHeight=parseInt(localStorage.getItem('step_height_v1')||'170');
 function getTodayKey(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
@@ -350,10 +350,13 @@ function handleMotion(e){
   if(!stepCounting)return;
   const a=e.accelerationIncludingGravity;if(!a||a.x===null)return;
   const raw=Math.sqrt((a.x||0)**2+(a.y||0)**2+(a.z||0)**2);
-  smoothMag=smoothMag*0.75+raw*0.25;
+  smoothMag=smoothMag*0.7+raw*0.3;        // 빠른 EMA — 피크 감지
+  baseline=baseline*0.98+raw*0.02;        // 느린 EMA — 기준선 추적
+  const upThresh=baseline+1.8;            // 동적 상단 임계값
+  const downThresh=baseline+0.3;          // 동적 하단 임계값
   const t=Date.now();
-  if(!isAbove&&smoothMag>11.5){isAbove=true;}
-  else if(isAbove&&smoothMag<10.2){isAbove=false;if(t-lastStepTs>400){lastStepTs=t;addOneStep();}}
+  if(!isAbove&&smoothMag>upThresh){isAbove=true;}
+  else if(isAbove&&smoothMag<downThresh){isAbove=false;if(t-lastStepTs>280){lastStepTs=t;addOneStep();}}
 }
 async function toggleStep(){
   const btn=document.getElementById('step-btn'),msg=document.getElementById('step-msg');
