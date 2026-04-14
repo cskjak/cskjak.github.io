@@ -11,7 +11,7 @@
 <meta name="apple-mobile-web-app-title" content="운동 트래커">
 <link rel="apple-touch-icon" href="strength-icon.svg">
 <style>
-  :root{--bg:#0f0f0f;--surface:#1a1a1a;--surface2:#222;--border:#2a2a2a;--text:#f0f0f0;--muted:#666;--muted2:#444;--accent:#1D9E75;--accent-hover:#18896a;--radius:12px;}
+  :root{--bg:#0f0f0f;--surface:#1a1a1a;--surface2:#222;--border:#2a2a2a;--text:#f0f0f0;--muted:#888;--muted2:#666;--accent:#1D9E75;--accent-hover:#18896a;--radius:12px;}
   *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
   html{scroll-behavior:smooth;}
   body{font-family:'Segoe UI',-apple-system,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
@@ -23,14 +23,14 @@
   .header p{font-size:13px;color:var(--muted);margin-top:4px;}
   .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:1.5rem;}
   .stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px 10px;}
-  .stat-label{font-size:9px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.6px;}
+  .stat-label{font-size:11px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.6px;}
   .stat-val{font-size:18px;font-weight:700;color:var(--text);line-height:1;}
   .stat-unit{font-size:10px;color:var(--muted);font-weight:400;margin-left:1px;}
   .tabs{display:flex;background:var(--surface);border-radius:10px;padding:4px;margin-bottom:1.25rem;gap:4px;}
   .tab{flex:1;padding:9px 4px;font-size:12px;font-weight:500;background:none;border:none;cursor:pointer;color:var(--muted);border-radius:8px;transition:all .15s;}
   .tab.active{background:var(--surface2);color:var(--text);}
-  .card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.25rem;margin-bottom:10px;}
-  .card-title{font-size:11px;color:var(--muted);margin-bottom:14px;text-transform:uppercase;letter-spacing:0.6px;}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.25rem;margin-bottom:16px;}
+  .card-title{font-size:14px;font-weight:600;color:var(--text);margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--border);}
   .cat-filter{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;}
   .cat-btn{padding:5px 12px;border-radius:20px;border:1px solid var(--border);background:none;color:var(--muted);font-size:12px;cursor:pointer;transition:all .15s;white-space:nowrap;}
   .cat-btn.active{background:var(--accent);border-color:var(--accent);color:#fff;}
@@ -87,7 +87,8 @@
   .bar-inner{width:100%;border-radius:4px 4px 0 0;min-height:3px;transition:height .5s ease;}
   .bar-x{font-size:9px;color:var(--muted2);}
   .dot{display:inline-block;width:7px;height:7px;border-radius:50%;flex-shrink:0;}
-  .empty{text-align:center;padding:2rem 1rem;font-size:13px;color:var(--muted2);}
+  .empty{text-align:center;padding:2.5rem 1rem;font-size:13px;color:var(--muted);line-height:2;}
+  .empty-icon{font-size:28px;display:block;margin-bottom:6px;}
   .toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(80px);background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 20px;font-size:13px;color:var(--text);transition:transform .3s ease;z-index:999;white-space:nowrap;pointer-events:none;}
   .toast.show{transform:translateX(-50%) translateY(0);}
   /* 만보기 */
@@ -139,11 +140,11 @@
     <div class="card">
       <div class="card-title">부위별 필터</div>
       <div class="cat-filter" id="pr-cat-filter"></div>
-      <div id="pr-list"><div class="empty">아직 기록이 없어요</div></div>
+      <div id="pr-list"><div class="empty"><span class="empty-icon">🏋️</span>아직 기록이 없어요</div></div>
     </div>
     <div class="card">
       <div class="card-title">세션별 총 볼륨 (kg)</div>
-      <div class="chart-bars" id="chart-bars"><div class="empty">기록이 없어요</div></div>
+      <div class="chart-bars" id="chart-bars"><div class="empty"><span class="empty-icon">📊</span>기록이 없어요</div></div>
     </div>
   </div>
   <!-- 기록 추가 -->
@@ -188,7 +189,7 @@
     <div class="card">
       <div class="card-title">기록 히스토리</div>
       <div class="history-filter" id="history-filter"></div>
-      <div id="history-list"><div class="empty">아직 기록이 없어요</div></div>
+      <div id="history-list"><div class="empty"><span class="empty-icon">📝</span>아직 기록이 없어요</div></div>
     </div>
     <button class="btn btn-danger" onclick="clearAll()">기록 전체 삭제</button>
   </div>
