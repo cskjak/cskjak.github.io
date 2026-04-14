@@ -77,9 +77,19 @@
     border-radius: 100px;
   }
   .test-title {
+    font-size: clamp(2.5rem, 7vw, 5rem);
+    line-height: 1.05; margin-bottom: 0.75rem;
+    letter-spacing: -0.02em;
+  }
+  .test-title-main {
+    font-family: 'Pretendard', sans-serif;
+    font-weight: 700;
+  }
+  .test-title-em {
     font-family: 'DM Serif Display', serif;
-    font-size: clamp(2rem, 6vw, 3rem);
-    line-height: 1.1; margin-bottom: 0.75rem;
+    font-style: italic;
+    color: transparent;
+    -webkit-text-stroke: 1px rgba(255,255,255,0.45);
   }
   .test-subtitle { font-size: 14px; color: var(--muted); line-height: 1.7; }
   .progress-wrap { margin-bottom: 2.5rem; }
@@ -278,7 +288,7 @@
   <div class="container">
     <div class="test-header" id="header">
       <div class="test-tag">// MBTI TEST</div>
-      <h1 class="test-title">나는 어떤 사람일까?</h1>
+      <h1 class="test-title"><span class="test-title-main">나는 어떤 사람일까</span><em class="test-title-em">?</em></h1>
       <p class="test-subtitle">20개의 질문으로 알아보는 MBTI 성격 유형 분석</p>
     </div>
     <div class="progress-wrap" id="progress-wrap">
