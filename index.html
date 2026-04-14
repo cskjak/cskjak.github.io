@@ -412,6 +412,13 @@
     }
     .nav-links.open { display: flex; }
     .nav-links a { font-size: 20px; letter-spacing: 0.1em; }
+    .nav-close {
+      position: absolute; top: 1.2rem; right: 1.5rem;
+      background: none; border: none; cursor: pointer;
+      color: var(--text); font-size: 28px; line-height: 1;
+      padding: 4px 8px; opacity: 0.7; transition: opacity 0.2s;
+    }
+    .nav-close:hover { opacity: 1; }
     .hero { padding: 0 1.5rem; }
     section { padding: 5rem 1.5rem; }
     .contact-grid { grid-template-columns: 1fr; gap: 2rem; }
@@ -427,6 +434,7 @@
 <nav id="nav">
   <div class="nav-logo">IC.DEV</div>
   <div class="nav-links" id="nav-links">
+    <button class="nav-close" onclick="closeNav()" aria-label="닫기">✕</button>
     <a href="#skills" onclick="closeNav()">스킬</a>
     <a href="#projects" onclick="closeNav()">프로젝트</a>
     <a href="#about" onclick="closeNav()">경력</a>
