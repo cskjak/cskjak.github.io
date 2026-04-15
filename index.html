@@ -266,6 +266,28 @@
   }
 
   /* ── Projects ── */
+  .project-filter {
+    display: flex; gap: 8px; margin-bottom: 2rem;
+    flex-wrap: wrap;
+  }
+  .filter-btn {
+    font-family: 'DM Mono', monospace; font-size: 11px;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    padding: 6px 18px; border-radius: 100px;
+    border: 1px solid var(--border); background: transparent;
+    color: var(--muted); cursor: none;
+    transition: all 0.2s;
+  }
+  .filter-btn:hover {
+    border-color: rgba(255,255,255,0.25); color: var(--text);
+  }
+  .filter-btn.active {
+    background: var(--accent); color: #0a0a0f;
+    border-color: var(--accent); font-weight: 500;
+  }
+  .project-card.hidden {
+    display: none;
+  }
   .projects-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
@@ -539,8 +561,13 @@
   <span class="section-tag">// 02. PROJECTS</span>
   <h2 class="section-title fade-up">만든 것들</h2>
   <p class="section-desc fade-up">순수 HTML / CSS / JavaScript로 직접 설계하고 구현한 프론트엔드 프로젝트들.</p>
+  <div class="project-filter fade-up">
+    <button class="filter-btn active" data-filter="all">전체</button>
+    <button class="filter-btn" data-filter="solo">개인 프로젝트</button>
+    <button class="filter-btn" data-filter="team">팀 프로젝트</button>
+  </div>
   <div class="projects-grid fade-up">
-    <div class="project-card">
+    <div class="project-card" data-type="solo">
       <div class="project-thumb">
         <img src="https://images.unsplash.com/photo-1507413245164-6160d8298b31?w=600&q=80" alt="MBTI 성격 분석">
         <div class="project-thumb-overlay"></div>
@@ -555,7 +582,7 @@
         <a href="mbti_test.html" class="project-link">자세히 보기 →</a>
       </div>
     </div>
-    <div class="project-card">
+    <div class="project-card" data-type="solo">
       <div class="project-thumb">
         <img src="https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=600&q=80" alt="헬스 로그">
         <div class="project-thumb-overlay"></div>
@@ -570,7 +597,7 @@
         <a href="strength_tracker.html" class="project-link">자세히 보기 →</a>
       </div>
     </div>
-    <div class="project-card">
+    <div class="project-card" data-type="solo">
       <div class="project-thumb">
         <img src="https://images.unsplash.com/photo-1511512578047-dfb367046420?w=600&q=80" alt="타워 디펜스">
         <div class="project-thumb-overlay"></div>
@@ -651,8 +678,24 @@
     }, 80);
   });
 
+  // 프로젝트 필터
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const filter = btn.dataset.filter;
+      document.querySelectorAll('.project-card').forEach(card => {
+        if (filter === 'all' || card.dataset.type === filter) {
+          card.classList.remove('hidden');
+        } else {
+          card.classList.add('hidden');
+        }
+      });
+    });
+  });
+
   // 커서 hover 효과 — 링크·버튼 위에서 링이 커짐
-  const hoverTargets = document.querySelectorAll('a, button, .project-card, .skill-item, .contact-link');
+  const hoverTargets = document.querySelectorAll('a, button, .project-card, .skill-item, .contact-link, .filter-btn');
   hoverTargets.forEach(el => {
     el.addEventListener('mouseenter', () => ring.classList.add('hovered'));
     el.addEventListener('mouseleave', () => ring.classList.remove('hovered'));
