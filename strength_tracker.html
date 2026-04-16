@@ -1,20 +1,21 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>운동 트래커 — 이의찬</title>
 <link rel="manifest" href="strength-manifest.json">
-<meta name="theme-color" content="#1D9E75">
+<meta name="theme-color" content="#c8f560">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="운동 트래커">
 <link rel="apple-touch-icon" href="strength-icon.svg">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
 <style>
-  :root{--bg:#0f0f0f;--surface:#1a1a1a;--surface2:#222;--border:#2a2a2a;--text:#f0f0f0;--muted:#888;--muted2:#666;--accent:#1D9E75;--accent-hover:#18896a;--radius:12px;}
+  :root{--bg:#0a0a0f;--surface:#111118;--surface2:#1a1a25;--border:rgba(255,255,255,0.08);--text:#f0f0f0;--muted:#aaa;--muted2:#888;--accent:#c8f560;--accent-hover:#b8e550;--radius:12px;}
   *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
   html{scroll-behavior:smooth;}
-  body{font-family:'Segoe UI',-apple-system,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+  body{font-family:'Pretendard','Segoe UI',-apple-system,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
   .wrap{max-width:520px;margin:0 auto;padding:1.5rem 1.25rem 4rem;}
   .back-link{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);text-decoration:none;margin-bottom:1.5rem;transition:color .15s;}
   .back-link:hover{color:var(--text);}
@@ -30,10 +31,10 @@
   .tab{flex:1;padding:9px 4px;font-size:12px;font-weight:500;background:none;border:none;cursor:pointer;color:var(--muted);border-radius:8px;transition:all .15s;}
   .tab.active{background:var(--surface2);color:var(--text);}
   .card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.25rem;margin-bottom:16px;}
-  .card-title{font-size:14px;font-weight:600;color:var(--text);margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--border);}
+  .card-title{font-size:14px;font-weight:600;color:#fff;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--border);}
   .cat-filter{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;}
   .cat-btn{padding:5px 12px;border-radius:20px;border:1px solid var(--border);background:none;color:var(--muted);font-size:12px;cursor:pointer;transition:all .15s;white-space:nowrap;}
-  .cat-btn.active{background:var(--accent);border-color:var(--accent);color:#fff;}
+  .cat-btn.active{background:var(--accent);border-color:var(--accent);color:#0a0a0f;}
   .lift-row{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
   .lift-row:last-child{margin-bottom:0;}
   .lift-info{flex:0 0 130px;}
@@ -48,7 +49,7 @@
   .form-group label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;}
   .form-group input,.form-group select,.form-group textarea{padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:#111;color:var(--text);font-size:15px;outline:none;transition:border .15s;-webkit-appearance:none;font-family:inherit;}
   .form-group textarea{font-size:13px;resize:none;height:60px;line-height:1.5;}
-  .form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:#444;}
+  .form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:rgba(255,255,255,0.2);}
   .form-group input.error{border-color:#c0392b;}
   .form-group select option{background:var(--surface);}
   .input-hint{font-size:11px;color:var(--muted);margin-top:2px;}
@@ -60,7 +61,7 @@
   .btn{width:100%;padding:12px;border:1px solid var(--border);border-radius:10px;background:none;color:var(--text);font-size:14px;font-weight:500;cursor:pointer;transition:all .15s;}
   .btn:hover{background:var(--surface2);}
   .btn:active{transform:scale(0.98);}
-  .btn-accent{background:var(--accent);border-color:var(--accent);color:#fff;}
+  .btn-accent{background:var(--accent);border-color:var(--accent);color:#0a0a0f;}
   .btn-accent:hover{background:var(--accent-hover);border-color:var(--accent-hover);}
   .btn-danger{border-color:#3a1a1a;color:#c0392b;margin-top:8px;}
   .btn-danger:hover{background:#1a0a0a;}
@@ -68,8 +69,8 @@
   .btn-stop:hover{background:#a93226;}
   .history-filter{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;}
   .hf-btn{padding:4px 10px;border-radius:20px;border:1px solid var(--border);background:none;color:var(--muted);font-size:11px;cursor:pointer;transition:all .15s;}
-  .hf-btn.active{background:var(--surface2);color:var(--text);border-color:#444;}
-  .log-item{display:flex;justify-content:space-between;align-items:flex-start;padding:12px 0;border-bottom:1px solid #1e1e1e;gap:8px;}
+  .hf-btn.active{background:var(--surface2);color:var(--text);border-color:rgba(255,255,255,0.2);}
+  .log-item{display:flex;justify-content:space-between;align-items:flex-start;padding:12px 0;border-bottom:1px solid rgba(255,255,255,0.05);gap:8px;}
   .log-item:last-child{border-bottom:none;}
   .log-left{flex:1;min-width:0;}
   .log-ex{font-size:14px;font-weight:500;color:var(--text);display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
@@ -105,7 +106,7 @@
   .step-meta-val{font-size:20px;font-weight:700;color:var(--text);}
   .step-meta-label{font-size:10px;color:var(--muted);margin-top:3px;text-transform:uppercase;letter-spacing:0.4px;}
   .step-msg{font-size:12px;color:var(--muted);text-align:center;margin-top:10px;min-height:18px;}
-  .step-hist-row{padding:10px 0;border-bottom:1px solid #1e1e1e;}
+  .step-hist-row{padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.05);}
   .step-hist-row:last-child{border-bottom:none;}
   .step-hist-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;}
   .step-hist-date{font-size:12px;color:var(--muted);}
@@ -351,10 +352,10 @@ function handleMotion(e){
   if(!stepCounting)return;
   const a=e.accelerationIncludingGravity;if(!a||a.x===null)return;
   const raw=Math.sqrt((a.x||0)**2+(a.y||0)**2+(a.z||0)**2);
-  smoothMag=smoothMag*0.7+raw*0.3;        // 빠른 EMA — 피크 감지
-  baseline=baseline*0.98+raw*0.02;        // 느린 EMA — 기준선 추적
-  const upThresh=baseline+1.8;            // 동적 상단 임계값
-  const downThresh=baseline+0.3;          // 동적 하단 임계값
+  smoothMag=smoothMag*0.7+raw*0.3;
+  baseline=baseline*0.98+raw*0.02;
+  const upThresh=baseline+1.8;
+  const downThresh=baseline+0.3;
   const t=Date.now();
   if(!isAbove&&smoothMag>upThresh){isAbove=true;}
   else if(isAbove&&smoothMag<downThresh){isAbove=false;if(t-lastStepTs>280){lastStepTs=t;addOneStep();}}
