@@ -1,0 +1,1659 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>아이언패스</title>
+    <style>
+        * {
+            margin: 0; /*바깥여백 */
+            padding: 0; /*안쪽여백 */
+            box-sizing: border-box; /* padding, border 포함해서 width/height 계산 (삐져나가지 않게) */
+        }
+        body {
+            background-color: #0a0a0f;/*배경색*/
+            color: white;/*글자 색*/
+            font-family: sans-serif;/*폰트 설정*/
+            display: flex; /*자식 요소들을 한 줄로 배치*/ /*inline : 내용만큼만 차지 ( span 기본값*/ /* 줄 전체 차지 (div 기본값) */
+            min-height: 100vh; /*내용 많으면 자동으로 늘어남  */
+        }
+
+        /* 사이드바  */
+        .sidebar {
+            width: 220px; ;/*가로*/ 
+            background-color: #111118; /*배경 색상*/
+            padding: 30px 16px;/*안쪽 여백 30 px 16 px*/
+            display: flex; /*자식 요소들을 한 줄로 배치*/
+            flex-direction: column; /*세로로 쌓기*/
+            gap: 8px; /*요소 간격*/ 
+            border-right: 1px solid#222; /*오른쪽 두께 및 색상*/
+            position: fixed; /*화면 고정*/
+            height: 100vh; /*화면에 맞게 100 맞추기 px 대신 vh*/
+        }
+
+        .sidebar-logo{
+            font-size: 20px;/*글자 크기*/
+            font-weight: bold;/*글자 굵기*/
+            color: #c8f560;/*글자 색상*/
+            margin-bottom: 30px;/*아랫쪽 바깥 여백*/
+            padding-left: 12px;/*왼쪽 안쪽 여백*/
+        }
+
+        .nav-item {
+            display: flex;/*자식 요소들을 한 줄로 배치*/
+            align-items: center;/*세로 가운데 정렬*/
+            gap: 12px; /*차이*/
+            padding: 12px 16px;/*안쪽 여백*/
+            border-radius: 8px;/*모서리 둥글게 만들기*/
+            cursor: pointer; /*마우스 커서 올리면 손가락 모양으로 변경*/
+            color: #888; /*사이드바 글자 색상*/
+            font-size: 15px;/*글자 크기*/
+        }
+
+        .nav-item:hover { /*마우스 올렸을때 변하는 디자인*/
+            background-color: #1a1a2e;/*배경 색상*/
+            color: white;/*글자 색상*/
+        }
+
+        .nav-item.active {
+            background-color: #1a1a2e;/*배경 색상*/
+            color: #c8f560;/*글자 색상*/
+            font-weight: bold; /*글자 굵기*/
+        }
+
+        .nav-icon {
+            font-size: 18px; /*사이드바 메뉴 아이콘 크기*/
+        }
+
+        /*메인 콘텐츠*/
+        .main {
+            margin-left: 220px; /*왼쪽 바깥여백*/
+            flex: 1; /*남은 공간 애가 차지*/
+            padding: 30px 40px;/*안쪽 여백*/
+        }
+
+        /*상단 헤더*/
+        .top-header {
+            display: flex;/*자식 요소들을 가로로 나란히 배치*/
+            justify-content: space-between; /*양쪽 끝에 붙이고 나란히 균등*/
+            align-items: center;/*세로 방향 가운데 정렬*/
+            gap: 10px; /*요소 사이 간격*/
+            margin-bottom: 30px; /*아래쪽 바깥 여백*/
+        }
+
+        .branch-name {
+            font-size: 18px; /*글자 크기*/
+            font-weight: bold;/*글자 굵기*/
+        }
+
+        .badge {
+            background-color: #c8f560; /*배경 색상*/
+            color: #0a0a0f;/*글자 색상*/
+            font-size: 12px; /*글자 크기*/
+            font-weight: bold; /*글자 굵기*/
+            padding: 3px 10px; /*안쪽 여백*/
+            border-radius: 4px;/*모서리 둥글게*/
+        }
+
+        .alarm {
+            font-size: 24px; /*글자 크기*/
+            cursor: pointer; /*우측 상단 벨 🔔아이콘 클릭 가능하게 만들기*/
+        }
+        
+        /*콘텐츠 그리드*/
+        .content-grid {
+            display: grid; /*격자 형태로 배치*/
+            grid-template-columns: 1fr 1fr; /*열을 몇개로 나눌지 설정 2열 설정함*/
+            gap: 24px; /*간격*/
+        }
+
+        .card {
+            background-color: #111118; /*배경색*/
+            border-radius: 16px;/*모서리 둥글게*/
+            padding: 24px;/*안쪽 여백*/
+            border: 1px solid #222;/*테두리 두께 및 색상*/ 
+        }
+
+        /*인사말 카드*/
+        .greeting-card h2 {
+            font-size: 28px; /*글자 크기*/
+            font-weight: bold; /*글자 굵기*/
+            line-height: 1.5; /*줄 간격*/
+            margin-bottom: 10px; /*아래쪽 바깥 여백*/
+        }
+
+        .streak {
+            color: #aaa; /*글자 색상*/
+            font-size: 14px;/*글자 크기*/
+        }
+
+        /*출석하기 버튼*/
+        .attend-btn {
+            display: block; /*줄 전체 차지*/
+            width: 100%;/*칸에 만게 딱 채우기*/
+            margin-top: 16px;/* 위쪽 바깥여백 */
+            padding: 16px; /* 안쪽 여백 */
+            background-color: #c8f560;/* 배경 색상 */
+            color: #0a0a0f; /*글자 색상*/
+            font-size: 16px; /*글자 크기*/
+            font-weight: bold; /*글자 굵기*/
+            border: none; /*테두리 없애기*/
+            border-radius: 8px; /*모서리 둥글게*/
+            cursor: pointer; /*마우스 올리면 손가락 모양으로*/
+        }
+
+        .attend-btn:hover {
+            background-color: #b8e558; /*배경 색상*/
+        }
+
+        /*출석 캘린더 카드*/
+        .calendar-card table {
+            width: 100%; /*가로 */
+            border-collapse: separate;/*칸들 각자 분리 → 틈 생김*/
+            border-spacing: 4px 4px;/*칸 사이 좌우 4px, 위아래 4px 간격*/
+            table-layout: fixed;/* 열 너비를 내용에 상관없이 균등하게 고정 */
+        }
+        
+        .calendar-card th {
+            color: #aaa;/*글자 색상*/
+            font-size: 13px;/*글자 크기*/
+            text-align: center; /*글자 가운데 정렬*/
+            padding: 8px 0; /*안쪽 여백*/
+            font-weight: normal;/*폰트 기본*/
+        }
+
+        .calendar-card td {
+            height: 40px; /*셀 높이*/
+            text-align: center; /*글자 가운데 정렬*/
+            font-size: 12px; /*글자 크기*/
+            color: #555; /*출석 안 한 날 글자 색상 (흐리게)*/
+            border-radius: 4px; /*모서리 둥글게*/
+        }
+
+        .calendar-card td.attended {
+            background-color: #c8f568;/*배경색상*/
+            color: #0a0a0f;/*글자 색상*/
+            font-weight: bold; /*글자 굵기*/
+            border-radius: 4px; /*모서리 둥글게*/
+        }
+
+        /* 배너 카드 */
+        .banner-card {
+            display: flex; /*자식 요소들을 한 줄로 배치*/
+            justify-content: space-between; /*양쪽 끝으로 배치*/
+            align-items: center; /*세로 방향 가운데 정렬*/
+        }
+
+        .banner-text p {
+            color: #c8f560; /*글자 색상*/
+            font-size: 16px; /*글자 크기*/
+            font-weight: bold; /*글가 굵기*/
+            line-height: 1.6; /*높이*/
+        }
+
+        .price-badge {
+            background-color: #c8f560; /*배경 색상*/
+            color: #0a0a0f; /* 글자 색상 */
+            font-size: 13px; /*글자 크기*/
+            font-weight: bold; /*글자 굵기*/
+            padding: 3px 10px; /*안쪽 여백*/
+            border-radius: 4px; /*모서리 둥글게*/
+            display: inline-block;/* 인라인처럼 옆에 붙되, width/height/margin 적용 가능하게 */
+            margin-top: 6px; /*위쪽 바깥 여백*/
+        }
+
+        .banner-img {
+            font-size: 64px; /*글자 크기*/
+        }
+
+        /* 상품 목록 카드 */
+        .shop-card {
+            grid-column: 1 / -1;/* 그리드 1번 열부터 마지막 열까지 꽉 채우기 (2열 전체 차지) */
+        }
+
+        .shop-card h3 {
+            font-size: 16px;/* 글자 크기 */
+            font-weight: bold; /*글자 굵기*/
+            margin-bottom: 16px; /*바깥 여백*/
+        }
+
+        .product-list {
+            display: flex; /*자식 요소들을 한 줄로 배치*/
+            gap: 20px; /*간격*/
+        }
+
+        .product-item {
+            text-align: center; /*가로 방향 가운데 정렬*/
+        }
+
+        .product-img {
+            width: 100px; /*가로*/
+            height: 100px; /*세로*/
+            background-color: #1a1a2e; /*배경 색상*/
+            border-radius: 12px; /*모서리 둥글게*/
+            display: flex; /*자식 요소들을 한 줄로 배치*/
+            align-items: center; /*세로 방향 가운데 정렬*/
+            justify-content: center; /*가로 방향 가운데 정렬*/
+            font-size: 42px; /*글자 크기*/
+            margin-bottom: 8px; /*밑에 바깥여백*/
+        }
+
+        .product-name {
+            font-size: 13px;/*글자 크기*/
+            color: #ccc;/*글자 색상*/
+        }
+
+        /* 로그인 화면 */
+        .login-screen {
+            position: fixed; /*화면 가운데 강제고정*/
+            top: 0;/*위에 포지션이랑 세트*/
+            left: 0;/*위에 포지션이랑 세트*/
+            width: 100%; /*가로*/
+            height: 100%;/*높이*/
+            background-color: #0a0a0f;/*배경색*/
+            display: flex;/*자식 요소들을 한 줄로 배치*/
+            justify-content: center;/*가로 가운데 정렬*/
+            align-items: center;/*세로 방향 가운데 정렬*/
+            z-index: 999;/*다른 요소들 위에 표시. 숫자 클수록 앞에*/
+        }
+
+        .login-box {
+            background-color: #111118; /*배경색*/
+            border: 1px solid #222; /*태두리 두께 및 색상*/
+            border-radius: 16px; /*모서리 둥글게*/
+            padding: 48px 40px; /*안쪽 여백*/
+            width: 100%; /*가로 꽉 차게 화면에 맞춰서*/
+            max-width: 400px;/*최대 가로*/
+        }
+
+        .login-logo {
+            font-size: 24px;/*글자 크기*/
+            font-weight: bold;/*글자 굵기*/
+            color: #c8f560;/*글자 색상*/
+            text-align: center;/*가운데로 정렬*/
+            margin-bottom: 8px; /*바깥 여백*/
+        }
+
+        .login-subtilte {
+            font-size: 14px; /*글자 크기*/
+            color: #888;/*글자 색상*/
+            text-align: center;/*가운데로 정렬*/
+            margin-bottom: 36px;/*바깥 여백*/
+        }
+        .input-group {
+            margin-bottom: 16px;/*바깥 여백*/
+        }
+
+        .input-group label {
+            display: block; /*줄 전체 차지 . 라벨이 바깥에 오게*/
+            font-size: 13px;/*글자 크기*/
+            color: #aaa;/*글자 색상*/
+            margin-bottom: 8px;/*바깥 여백*/
+        }
+
+        .input-group input {
+            width: 100%;/*가로*/
+            padding: 14px 16px;/*안쪽 여백*/
+            background-color: #1a1a2e;/*배경 색상*/
+            border: 1px solid #333;/*테두리 두께 및 색상*/
+            border-radius: 8px;/*모서리 둥글게*/
+            color: white;/*글자 색상 */
+            font-size: 15px;/*글자 크기*/
+            outline: none;/*입력창 클릭 시 기본 테두리 제거*/
+        }
+
+        .input-group input:focus {
+            border-color: #c8f560; /*태두리 색상*/
+        }
+
+        .login-btn {
+            display: block;/*줄 전체 차지*/
+            width: 100%;/*가로 화면에 맞게 꽉채우기*/
+            padding: 16px; /*안쪽 여백*/
+            background-color: #c8f560; /*배경 색상*/
+            color: #0a0a0f;/*글자 색상*/
+            font-size: 16px;/*글자 크기*/
+            font-weight: bold;/*글자 두께*/
+            border: none;/*테두리*/
+            border-radius: 8px;/*모서리 둥글게*/
+            cursor: pointer;/*포인터 손가락 표시*/
+            margin-top: 24px;/*바깥 여백*/
+        }
+
+        .login-btn:hover {
+            background-color: #b8e550; /*배경색상*/
+        }
+
+        .signup-link {
+            text-align: center;/*가운데로 정렬*/
+            margin-top: 20px;/*바깥 여백*/
+            font-size: 14px;/*글자 크기*/
+            color: #888;/*글자 색상*/
+        }
+
+        .signup-link a {
+            color: #c8f560;/*글자 색상*/
+            text-decoration: none;/*링크 기본 밑줄 제거*/
+        }
+
+        .signup-link a:hover {
+            text-decoration: underline;/*마우스 올리면 밑줄 표시*/
+        }
+
+        .hidden {
+            display: none;/*화면에서 숨기기 / 로그인창 숨기기*/
+        }
+
+        /* 회원가입 화면*/
+        .signup-screen {
+            position: fixed;/*화면 강제 고정. 밑에 top.left 세트로 사용*/
+            top: 0;
+            left: 0;
+            width: 100%; /*화면에 맞춰 가로 꽉차게*/
+            height: 100%;/*화면에 맞춰 세로 꽉차게*/
+            background-color: #0a0a0f;/*배경색*/
+            display: none;/*화면에서 완전히 숨기기*/
+            justify-content: center;/*가로 방향 가운데 정렬*/
+            align-items: center;/*세로 방향 정렬*/
+            z-index: 999;/*요소가 앞에 나올 순서. 숫자 클수록 더 앞에*/
+        }
+
+        .signup-screen.show {
+            display: flex; /*자식 요소들을 한 줄로 배치*/
+        }
+
+        .login-link {
+            text-align: center; /*가로 가운데 정렬*/
+            margin-top: 20px; /*바깥 여백*/
+            font-size: 14px; /*글자 크기*/
+            color: #888;/*글자 색상*/
+        }
+
+        .login-link a {
+            color: #c8f560;/*글자 색상*/
+            text-decoration: none; /*밑줄제거*/
+        }
+
+        .login-link a:hover {
+            text-decoration: underline; /*밑줄 긋기*/
+        }
+
+        /* 마이페이지 */
+        .mypage-main {
+            display: none; /*숨기기 - 안보임 공간도 같이 안보임*/
+        }
+
+        .mypage-main.active {
+            display: block; /*줄 전체 독차지 다음 내용은 아래로*/
+        }
+
+        .home-main.hidden {
+            display: none; /*숨기기 - 안보임 공간도 같이 안보임*/
+        }
+
+        .mypage-grid {
+            display: grid; /*칸 미리 그려 놨으니까 들어가*/
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        .full-width {
+            grid-column: 1 / -1; /*1번 열부터 마지막 열까지 꽉 채우기*/
+        }
+
+        .profile-card {
+            display: flex; /*자식 요소들을 한 줄로 배치*/
+            align-items: center; /*세로 방향 정렬*/
+            gap: 20px; /*간격*/
+            margin-bottom: 20px; /* 아래 바깥 여백*/
+        }
+
+        .profile-avatar {
+            width: 72px;/*가로 높이*/
+            height: 72px;/*세로 높이*/
+            background-color: #c8f560;/*배경 색상*/
+            color: #0a0a0f;/*글자 색상*/
+            border-radius: 50%;/*모서리 둥글게*/
+            display: flex;/*자식요소들을 한 줄로 배치*/
+            align-items: center;/*세로 방향 가운데 정렬*/
+            justify-content: center;/*가로 방향 가운데 정렬*/
+            font-size: 20px;/*글자 크기*/
+            font-weight: bold; /*글자 굵기*/
+        }
+
+        .profile-info h2 {
+            font-size: 20px;/*글자 크기*/
+            font-weight: bold;/*글자 굵기*/
+            margin-bottom: 4px;/*아래쪽 바깥 여백*/
+        }
+
+        .profile-info p {
+            font-size: 14px;/*글자 크기*/
+            color: #888; /*글자 색상*/
+        }
+
+        .section-title {
+            font-size: 16px;/*글자 크기*/
+            font-weight: bold;/*글자 굵기*/
+            margin-bottom: 16px;/*아래쪽 바깥 여백*/
+        }
+
+        .info-row {
+            display: flex;/*자식요소들을 한 줄로 배치*/
+            justify-content: space-between;/*양쪽 끝으로 붙이기*/
+            align-items: center;/*세로 방향 가운데 정렬*/
+            padding: 12px 0;/*안쪽 여백*/
+            border-bottom: 1px solid #222; /*아래쪽 테두리 선*/
+            font-size: 14px;/*글자 크기*/
+        }
+
+        .info-row:last-child {
+            border-bottom: none; /*아래쪽 테두리 선 없애기*/
+        }
+
+        .info-label {
+            color: #888;/*글자 색상*/
+        }
+
+        .info-value {
+            color: white; /*글자 색상*/
+        }
+
+        .membership-status {
+            display: flex;/*자식요소들을 한 줄로 배치*/
+            justify-content: space-between;/*양쪽 끝으로 배치*/
+            align-items: center; /*세로 방향 가운데 정렬*/
+            margin-bottom: 16px; /*아래쪽 바깥여백*/
+        }
+
+        .status-badge {
+            background-color: #c8f560;
+            color: #0a0a0f;/*글자 색상*/
+            font-size: 12px;/*글자 크기*/
+            font-weight: bold;/*글자 굵기*/
+            padding: 4px 10px;/*안쪽 여백*/
+            border-radius: 4px;/*모서리 둥글게*/
+        }
+
+        .dday {
+            font-size: 32px;/*글자 크기*/
+            font-weight: bold;/*글자 굵기*/
+            color: #c8f560;/*글자 색상*/
+            margin-bottom: 4px;/*아래쪽 바깥 여백*/
+        }
+
+        .expire-date {
+            font-size: 13px;/*글자 크기*/
+            color: #555;/*글자 색상*/
+            margin-bottom: 16px;/*아래쪽 바깥 여백*/
+        }
+
+        .cancel-btn {
+            width: 100%;/*가로 높이*/
+            padding: 12px;/*안쪽 여백*/
+            background-color: transparent;/*배경 투명*/
+            border: 1px solid #444;/*태두리 두께 및 색상*/
+            border-radius: 8px;/*모서리 둥글게*/
+            color: #888;/*글자 색상*/
+            font-size: 14px;/*글자 크기*/
+            cursor: pointer;/*마우스 올리면 손가락 모양*/
+        }
+
+        .cancel-btn:hover {
+            border-color: #888;/*태두리 색상*/
+            color: white;/*글자 색상*/
+        }
+
+        .coupon-item {
+            background-color: #1a1a2e;/*배경색상*/
+            border-radius: 12px;/*모서리 둥글게*/
+            padding: 16px;/*안쪽 여백*/
+            margin-bottom: 12px;/*아래쪽 바깥 여백*/
+            display: flex;/*자식요소들을 한 줄로 배치*/
+            justify-content: space-between;/*양쪽 끝으로 배치*/
+            align-items: center;/*세로 방향 가운데 정렬*/
+            border-left: 4px solid #c8f560;/*왼쪽 테두리 크기 및 색상*/
+        }
+
+        .coupon-item:last-child {
+            margin-bottom: 0;/*마지막 쿠폰은 아래 여백 제거*/
+        }
+
+        .coupon-name {
+            font-size: 14px;/*글자 크기*/
+            font-weight: bold;/*글자 굵기*/
+            margin-bottom: 4px;/*아래쪽 바깥 여백*/
+        }
+
+        .coupon-expire {
+            font-size: 12px;/*글자 크기*/
+            color: #555;/*글자 색상 (흐리게)*/
+        }
+
+        .use-btn {
+            padding: 8px 16px;/*안쪽 여백*/
+            background-color: #c8f560;/*배경 색상*/
+            color: #0a0a0f;/*글자 색상*/
+            font-size: 13px;/*글자 크기*/
+            font-weight: bold;/*글자 굵기*/
+            border: none;/*테두리 없애기*/
+            border-radius: 6px;/*모서리 둥글게*/
+            cursor: pointer;/*마우스 올리면 손가락 모양*/
+        }
+
+        .payment-item {
+            display: flex;/*자식요소들을 한 줄로 배치*/
+            justify-content: space-between;/*양쪽 끝으로 배치*/
+            align-items: center;/*세로 방향 가운데 정렬*/
+            padding: 12px 0;/*안쪽 여백*/
+            border-bottom: 1px solid #222;/*아래쪽 테두리 선*/
+        }
+
+        .payment-item:last-child {
+            border-bottom: none;/*마지막 항목은 테두리 선 없애기*/
+        }
+
+        .payment-name {
+            font-size: 14px;/*글자 크기*/
+            color: white;/*글자 색상*/
+        }
+
+        .payment-date {
+            font-size: 12px;/*글자 크기*/
+            color: #555;/*글자 색상 (흐리게)*/
+            margin-top: 4px;/*위쪽 바깥 여백*/
+        }
+
+        .payment-amount {
+            font-size: 14px;/*글자 크기*/
+            color: #c8f560;/*글자 색상 (라임)*/
+            font-weight: bold;/*글자 굵기*/
+        }
+
+        /* G오더 페이지 */
+        .shop-main {
+            display: none; /* 안보임 공간도 사라짐*/
+        }
+
+        .shop-main.active {
+            display: block; /* 줄 전체 차지 */ 
+        }
+
+        .product-grid {
+            display: grid; /* 바둑 칸 처럼 칸 나눠서 배치 */
+            grid-template-columns: 1fr 1fr 1fr; /* 3 열 만들기 */
+            gap: 20px; /* 간격 */
+        }
+
+        .product-card {
+            background-color: #111118; /* 배경 색상 */
+            border-radius: 16px;/* 모서리 둥글게  */
+            padding: 20px;/* 안쪽 여백 */
+            border: 1px solid #222; /* 테두리 두께 및 색상 */
+        }
+
+        .product-card-img {
+            width: 100%; /* 가로 */
+            height: 120px;/* 세로 */
+            background-color: #1a1a2e; /* 배경 색상*/
+            border-radius: 12px;/* 모서리 둥글게 */
+            display: flex;/* 자식요소들을 자유롭게 배치 */
+            align-items: center;/*  세로 방향 가운데로 정렬 */
+            justify-content: center; /* 자식요소들을 가로 방향 정렬  */
+            font-size: 52px; /* 글자 크기 */
+            margin-bottom: 12px;/* 아래쪽 바깥 여백 */
+            position: relative; /* 부모 기준으로 위치 고정 */
+        }
+
+        .product-badge {
+            position: absolute; /* 부모 기준으로 위치 잡기*/
+            top: 8px;/* 위에서 */
+            right: 8px;/* 오른쪽에서 */
+            background-color: #c8f560; /* 배경 색상 */
+            color: #0a0a0f ; /* 글자 색상 */
+            font-size: 11px;/* 글자 크기 */
+            font-weight: bold;/* 글자 크기 */
+            padding: 2px 8px;/* 안쪽 여백 */
+            border-radius: 4px; /* 모서리 둥글게 */
+        }
+
+        .product-badge.new {
+            background-color: #7c6dfa; /* 배경색상 */
+            color: white;/* 글자 색상 */
+        }
+        .product-card-name {
+            font-size: 14px; /* 글자 크기 */
+            font-weight: bold;/* 글자 굵기 */
+            margin-bottom: 6px;/* 아랫쪽 바깥여백 */
+        }
+
+        .product-card-price {
+            font-size: 15px; /* 글자 크기 */
+            color: #c8f560; /* 글자 색상 */
+            font-weight: bold; /* 글자 굵기 */
+            margin-bottom: 12px; /* 아랫쪽 바깥 여백 */
+        }
+
+        .add-btn {
+            width: 100%; /* 가로 */
+            padding: 10px;/* 안쪽 여백 */ 
+            background-color: transparent; /* 배경 투명 */
+            border: 1px solid #c8f560; /* 테두리 두께 및 색상 */
+            border-radius: 8px; /* 모서리 둥글게 */
+            color: #c8f560;/* 글자 색상 */
+            font-size: 13px;/* 글자 크기 */ 
+            font-weight: bold;/* 글자 굵기 */
+            cursor: pointer;/* 마우스 올렸을때 손가락 모양 */
+        }
+
+        .add-btn:hover {
+            background-color: #c8f560; /* 배경 색상 */ 
+            color: #0a0a0f;/* 글자 색상  */
+        }
+
+        /* 관리자 페이지 */
+        .admin-main {
+            display: none; /*화면에서 숨기기 공간까지 없애기*/
+        }
+
+        .admin-main.active {
+            display: block; /* 줄 전체 차지 */
+        }
+
+        .admin-wrapper {
+            display: flex; /*가로로 줄 세우기 */
+            flex-direction: column; /* 세로로 한 줄 나란히 */
+            gap: 24px; /* 간격 */
+        }
+
+        .admin-table {
+            width: 100%; /* 가로 */
+            border-collapse: collapse; /* 테두리 겹치게 */
+            font-size: 14px; /* 글자 크기 */
+        }
+
+        .admin-table th {
+            text-align: left; /* 가로 방향 왼쪽 정렬 */
+            color: #888; /* 글자 색상 */
+            font-size: 12px;/* 글자 크기 */
+            font-weight: normal; /* 글자 굴기 기본 */
+            padding: 8px 12px; /* 안쪽 여백 */
+            border-bottom: 1px solid #222; /* 아랫쪽 테두리 두께 및 색상 */
+        }
+
+        .admin-table td {
+            padding: 12px;
+            border-bottom: 1px solid #1e1e2e;
+            color: #ddd;
+            white-space: nowrap; /* 칸 안 내용이 줄바꿈되지 않게 한 줄 고정 */
+        }
+
+        .admin-table tr:last-child td {
+            border-bottom: none; /* 아랫쪽 테두리 없애기 */
+        }
+
+        .admin-btn {
+            padding: 4px 10px; /* 안쪽 여백 */
+            border-radius: 4px; /* 모서리 둥글게 */
+            font-size: 12px; /* 글자 크기 */
+            font-weight: bold; /* 글자 굵기 */
+            cursor: pointer; /* 마우스 커소 올리면 손가락 모양 */
+            border: none; /* 테두리 없애기 */
+        }
+
+        .admin-btn.edit {
+            background-color: transparent; /* 투명 배경 */
+            border: 1px solid #c8f560; /* 테두리 두께 및 색상 */
+            color: #c8f560; /* 글자 색상 */
+            margin-right: 4px; /* 오른쪽 바깥 여백  */
+        }
+
+        .admin-btn.delete {
+            background-color: transparent; /* 배경 투명 */
+            border: 1px solid #ff5555;/* 테두리 두께 및 색상 */
+            color: #ff5555;/* 글자 색상  */
+        }
+
+        .admin-btn.add {
+            background-color: #c8f560; /* 배경 색상  */
+            color: #0a0a0f; /* 글자 색상 */
+            padding: 8px 16px;/* 안쪽 여백  */
+            font-size: 13px; /*글자 크기*/
+            border-radius: 8px;/* 모서리 둥글게 */
+            margin-top: 16px; /* 위쪽 바깥 여백 */
+        }
+
+        .status-on {
+            color: #c8f560; /* 글자 색상 */
+            font-weight: bold; /* 글자 굵기 */
+        }
+
+        .status-off {
+            color: #555; /* 글자 색상 */
+        }
+
+        /* 활동 내역 */
+        .activity-main {
+            display: none;/*화면에서도 숨기고 공간까지 없애기 */
+        }
+
+        .activity-main.active {
+            display: block; /*active 클래스 추가되면 보이게*/
+        }
+
+        .activity-wrapper {
+            display: flex; /*자식요소들을 한 줄로 배치 */ 
+            flex-direction: column;/* 세로로 줄 세우기 */
+            gap: 20px;/* 간격 */
+        }
+
+        .attendance-summary {
+            display: flex; /* 자식요소들을 한 줄로 배치*/
+            gap: 32px;
+        }
+
+        .summary-item {
+            text-align: center; /* 가로 방향으로 가운데 정렬 */
+        }
+
+        .summary-num {
+            font-size: 26px; /* 글자 크기 */
+            font-weight: bold; /* 글자 굵기 */
+            color: #c8f560; /* 글자 색상 */
+        }
+
+        .summary-label {
+            font-size: 12px; /* 글자 크기 */
+            color: #888; /* 글자 색상 */
+            margin-top: 4px; /* 바깥 여백 */
+        }
+
+        .calendar-header {
+            display: flex;/*자식요소들을 한 줄로 배치 */
+            justify-content: space-between; /* 양쪽 끝에 붙이고 좌우 균등 */
+            align-items: center;/*세로 방향 가운데 정렬 */
+            margin-bottom: 16px; /* 아랫쪽 바깥여백 */
+            color: #aaa; /* 글자 색상 */
+            cursor: pointer; /* 마우스올려두면 손가락모양 */ 
+        }
+
+        .calendar-month-title {
+            font-size: 15px; /* 글자 크기*/
+            font-weight: bold; /* 글자 굵기*/
+            color: #c8f560; /* 글자 색상*/
+        }
+
+        .activity-calendar-card table {
+            width: 100%; /* 가로 */
+            border-collapse: separate; /*칸 각자 분리*/
+            border-spacing: 4px 4px; /* 칸 사이 간격*/
+            text-align: center;/* 세로 방향 가운데 정렬*/
+        }
+
+        .activity-calendar-card th {
+            color: #555; /* 글자 색상*/
+            font-size: 12px; /* 글자 크기*/
+            padding: 6px 0;/* 안쪽 여백*/
+        }
+
+        .activity-calendar-card td {
+            padding: 8px 4px; /* 안쪽 여백 */
+            font-size: 13px;/* 글자 크기 */
+            color: #aaa;/* 글자 색상*/
+        }
+
+        .activity-calendar-card td.attended {
+            background-color: #c8f560; /* 배경 색상 */
+            color: #0a0a0f;/* 글자 색상 */
+            font-weight: bold;/* 글자 굵기 */
+            border-radius: 6px;/* 모서리 둥글게*/
+        }
+
+        .activity-calendar-card td.today {
+            border: 1px solid #c8f560; /* 테두리 두께 및 색상*/
+            color: #c8f560;/* 글자 색상 */
+            border-radius: 6px; /* 모서리 둥글게 */
+        }
+
+        .activity-calendar-card td.empty {
+            color: transparent; /*글자 색 투명*/
+        }
+
+        .activity-list-title {
+            font-size: 15px; /* 글자 크기 */
+            font-weight: bold;/* 글자 굵기 */
+            color: #fff; /* 글자 색상 */
+            margin-bottom: 12px;/* 아랫쪽 바깥 여백*/
+        }
+
+        .activity-item {
+            display: flex; /*가로로 한 줄 나란히*/
+            justify-content: space-between; /* 가로 방향 양쪽 끝에 붙이고 사이 간격 균등*/
+            align-items: center; /* 세로 방향 가운데 정렬*/
+            padding: 12px 0; /* 안쪽 여백*/
+            border-bottom: 1px solid #1e1e2e; /* 아랫쪽 구분선 두께 및 색상*/
+        }
+
+        .activity-item:last-child {
+            border-bottom: none; /*아랫쪽 테두리 숨기기*/
+        }
+
+        .activity-date {
+            font-size: 14px; /*글자 크기*/
+            color: #fff;/* 글자 색상 */
+            font-weight: bold;/* 글자 굵기 */
+        }
+
+        .activity-day {
+            font-size: 12px; /* 글자 크기 */
+            color: #888;/* 글자 색상 */
+            margin-top: 3px; /* 윗쪽 바깥여백*/
+        }
+
+        .activity-time {
+            font-size: 13px; /*글자 크기*/
+            color: #c8f560;/* 글자 색상 */
+            font-weight: bold;/* 글자 굵기 */
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- 로그인 화면-->
+     <div class="login-screen" id="login-screen">
+        <div class="login-box">
+            <div class="login-logo">⚡ 아이언패스 ⚡</div>
+            <p class="login-subtilte">헬스장 출석 & 주문 관리</p>
+
+            <div class="input-group">
+                <label>아이디</label>
+                <input type="text" placeholder="아이디를 입력하세요">
+            </div>
+
+            <div class="input-group">
+                <label>비밀번호</label>
+                <input type="password" placeholder="비밀번호를 입력하세요">
+            </div>
+
+            <button class="login-btn" onclick="goHome()">로그인</button>
+
+            <p class="signup-link">
+                아직 회원이 아니신가요? <a href="javascript:void(0)" onclick="showSignup()">회원가입</a>
+            </p>
+        </div>
+     </div>
+
+
+     <!-- 회원가입 화면-->
+      <div class="signup-screen" id="signup-screen">
+        <div class="login-box">
+            <div class="login-logo">⚡ 아이언 패스⚡</div>
+            <p class="login-subtilte">회원가입</p>
+
+            <div class="input-group">
+                <label>이름</label>
+                <input type="text" placeholder="이름을 입력하세요">
+            </div>
+
+            <div class="input-group">
+                <label>아이디</label>
+                <input type="text" placeholder="아이디를 입력하세요">
+            </div>
+
+            <div class="input-group">
+                <label>비밀번호</label>
+                <input type="password" placeholder="비밀번호를 입력하세요">
+            </div>
+
+            <div class="input-group">
+                <label>비밀번호 확인</label>
+                <input type="password" placeholder="비밀번호를 다시 입력하세요">
+            </div>
+
+            <button class="login-btn" onclick="goHome()">회원가입</button>
+
+            <p class="login-link">
+                이미 회원이신가요? <a href="#" onclick="showLogin()">로그인</a>
+            </p>
+        </div>
+      </div>
+
+    <!-- 사이드바  -->
+     <nav class="sidebar">
+        <div class="sidebar-logo">💪 GYM</div>
+        <div class="nav-item active" id="navHome" onclick="showHome()">
+            <span class="nav-icon">🏠</span> 홈
+        </div>
+        <div class="nav-item" id="navShop" onclick="showShop()">
+            <span class="nav-icon">📊</span> G오더
+        </div>
+        <div class="nav-item" id="navActivity" onclick="showActivity()">
+            <span class="nav-icon">📚</span> 활동
+        </div>
+        <div class="nav-item" id="navMypage" onclick="showMypage()">
+            <span class="nav-icon">👷🏿‍♀️</span> 마이페이지
+        </div>
+        <div class="nav-item" id="navAdmin" onclick="showAdmin()">
+            <span class="nav-icon">⚙️</span> 관리자
+        </div>    
+     </nav>
+
+     <!-- 메인 콘텐츠 -->
+      <div class="main home-main" id="homeMain">
+
+        <!-- 상단 헤더-->
+         <div class="top-header">
+            <div class="branch-info">
+                <span class="branch-name">서울지점</span>
+                <span class="badge">쾌적</span>
+            </div>
+            <span class="alarm">🔔</span>
+         </div>
+
+         <!-- 콘텐츠 그리드-->
+          <div class="content-grid">
+
+            <!-- 인사말 + 출석버튼 -->
+             <div class="card greeting-card">
+                <h2>안녕하세요 👋<br>홍길동님!</h2>
+                <p class="streak">📆 연속운동 61주</p>
+                <button class="attend-btn">출석하기</button>
+             </div>
+
+             <!-- 출석 캘린더-->
+              <div class="card calendar-card">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>월</th>
+                            <th>화</th>
+                            <th>수</th>
+                            <th>목</th>
+                            <th>금</th>
+                            <th>토</th>
+                            <th>일</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>03.23</td>
+                            <td></td>
+                            <td class="attended"></td>
+                            <td class="attended"></td>
+                            <td></td>
+                            <td class="attended"></td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td class="attended"></td>
+                            <td class="attended"></td>
+                            <td class="attended"></td>
+                            <td></td>
+                            <td class="attended"></td>
+                            <td class="attended"></td>
+                            <td class="attended"></td>
+                        </tr>
+                        <tr>
+                            <td class="attended"></td>
+                            <td></td>
+                            <td class="attended"></td>
+                            <td></td>
+                            <td class="attended"></td>
+                            <td class="attended"></td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td class="attended"></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td>04.19</td>
+                        </tr>
+                    </tbody>
+                </table>
+              </div>
+
+              <!-- 상품 배너-->
+                <div class="card banner-card">
+                <div class="banner-text">
+                    <p>맛과 단백질 30g<br>핵심만 담았다, MOOVA</p>
+                    <span class="price-badge">1+1 2,900won</span>
+                </div>
+                <div class="banner-img">🥤</div>
+                </div>
+
+                <!-- 멤버십 현황-->
+                <div class="card">
+                    <h3 style="margin-bottom: 12px;">💳 멤버십 현황</h3>
+                    <p style="color: #aaa; font-size: 14px;">구독 중</p>
+                    <p style="color: #c8f568; font-size: 20px; font-weight: bold; margin-top: 8px;">D-12</p>
+                    <p style="color: #555; font-size: 13px; margin-top: 4px;">만료일: 2026.04.28</p>
+                </div>
+
+                <!-- 상품 목록-->
+                <div class="card shop-card">
+                    <h3>G오더</h3>
+                    <div class="product-list">
+                        <div class="product-item">
+                            <div class="product-img">💧</div>
+                            <p class="product-name">아이시스</p>
+                        </div>
+                        <div class="product-item">
+                            <div class="product-img">🥤</div>
+                            <p class="product-name">무바 프로틴(1+1)</p>
+                        </div>
+                        <div class="product-item">
+                            <div class="product-img">⚡</div>
+                            <p class="product-name">몬스터 에너지</p>
+                        </div>
+                    </div>
+                </div>
+
+          </div> <!-- content-grid 닫기 -->
+      </div> <!-- main 닫기 -->
+
+    <!-- 마이페이지 -->
+    <div class="main mypage-main" id="mypageMain">
+
+        <!-- 상단 헤더 -->
+        <div class="top-header">
+            <div class="branch-info">
+                <span class="branch-name">마이페이지</span>
+            </div>
+            <span class="alarm">🔔</span>
+        </div>
+
+        <div class="mypage-grid">
+
+            <!-- 프로필 + 내 정보 -->
+            <div class="card full-width">
+                <div class="profile-card">
+                    <div class="profile-avatar">홍</div>
+                    <div class="profile-info">
+                        <h2>홍길동</h2>
+                        <p>ID: hong1234</p>
+                    </div>
+                </div>
+                <p class="section-title">내 정보</p>
+                <div class="info-row">
+                    <span class="info-label">이름</span>
+                    <span class="info-value">홍길동</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">아이디</span>
+                    <span class="info-value">hong1234</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">가입일</span>
+                    <span class="info-value">2025.10.01</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">바코드 번호</span>
+                    <span class="info-value">1234-5678-9012</span>
+                </div>
+            </div>
+
+            <!-- 멤버십 현황 -->
+            <div class="card">
+                <div class="membership-status">
+                    <p class="section-title" style="margin-bottom:0;">💳 멤버십 현황</p>
+                    <span class="status-badge">구독 중</span>
+                </div>
+                <p class="dday">D-12</p>
+                <p class="expire-date">만료일: 2026.04.28</p>
+                <button class="cancel-btn">구독 중지</button>
+            </div>
+
+            <!-- 쿠폰함 -->
+            <div class="card">
+                <p class="section-title">🎟️ 쿠폰함</p>
+                <div class="coupon-item">
+                    <div>
+                        <p class="coupon-name">무바 프로틴 1+1</p>
+                        <p class="coupon-expire">~ 2026.05.31</p>
+                    </div>
+                    <button class="use-btn">사용</button>
+                </div>
+                <div class="coupon-item">
+                    <div>
+                        <p class="coupon-name">아이시스 10% 할인</p>
+                        <p class="coupon-expire">~ 2026.06.15</p>
+                    </div>
+                    <button class="use-btn">사용</button>
+                </div>
+            </div>
+
+            <!-- 결제내역 -->
+            <div class="card full-width">
+                <p class="section-title">💰 결제내역</p>
+                <div class="payment-item">
+                    <div>
+                        <p class="payment-name">월 구독 결제</p>
+                        <p class="payment-date">2026.03.28</p>
+                    </div>
+                    <span class="payment-amount">59,000원</span>
+                </div>
+                <div class="payment-item">
+                    <div>
+                        <p class="payment-name">무바 프로틴 (1+1)</p>
+                        <p class="payment-date">2026.03.15</p>
+                    </div>
+                    <span class="payment-amount">2,900원</span>
+                </div>
+                <div class="payment-item">
+                    <div>
+                        <p class="payment-name">몬스터 에너지</p>
+                        <p class="payment-date">2026.03.10</p>
+                    </div>
+                    <span class="payment-amount">2,900원</span>
+                </div>
+                <div class="payment-item">
+                    <div>
+                        <p class="payment-name">월 구독 결제</p>
+                        <p class="payment-date">2026.02.28</p>
+                    </div>
+                    <span class="payment-amount">59,000원</span>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+
+    <!-- G오더 페이지 -->
+     <div class="main shop-main" id="shopMain">
+
+        <!-- 상단 헤더 -->
+         <div class="top-header">
+            <div class="branch-info">
+                <span class="branch-name">G오더</span>
+            </div>
+            <span class="alarm">🔔</span>
+         </div>
+
+
+         <!-- 상품 그리드 -->
+          <div class="product-grid">
+
+            <div class="product-card">
+                <div class="product-card-img">
+                    🥤
+                    <span class="product-badge">1+1</span>
+                </div>
+                <p class="product-card-name">무바 프로틴</p>
+                <p class="product-card-price">2,900원</p>
+                <button class="add-btn">장바구니 담기</button>
+            </div>
+
+            <div class="product-card">
+                <div class="product-card-img">💧</div>
+                <p class="product-card-name">아이시스 생수</p>
+                <p class="product-card-price">800원</p>
+                <button class="add-btn">장바구니 담기</button>
+            </div>
+
+            <div class="product-card">
+                <div class="product-card-img">
+                    ⚡
+                    <span class="product-badge">1+1</span>
+                </div>
+                <p class="product-card-name">몬스터 에너지</p>
+                <p class="product-card-price">2,500원</p>
+                <button class="add-btn">장바구니 담기</button>
+            </div>
+
+            <div class="product-card">
+                <div class="product-card-img">
+                    🍗
+                    <span class="product-badge new">NEW</span>
+                </div>
+                <p class="product-card-name">닭가슴살 바</p>
+                <p class="product-card-price">4,500원</p>
+                <button class="add-btn">장바구니 담기</button>
+            </div>
+
+            <div class="product-card">
+                <div class="product-card-img">🍫</div>
+                <p class="product-card-name">프로틴바</p>
+                <p class="product-card-price">1,800원</p>
+                <button class="add-btn">장바구니 담기</button>
+            </div>
+
+            <div class="product-card">
+                <div class="product-card-img">🧃</div>
+                <p class="product-card-name">비타민 워터</p>
+                <p class="product-card-price">1,500원</p>
+                <button class="add-btn">장바구니 담기</button>
+            </div>
+          </div>
+     </div>
+
+     <!-- 활동 내역 페이지 -->
+      <div class="main activity-main" id="activityMain">
+
+        <!-- 상단 헤더 -->
+         <div class="top-header">
+            <div class="branch-info">
+                <span class="branch-name">활동 내역</span>
+            </div>
+            <span class="alarm">🔔</span>
+         </div>
+
+         <div class="activity-wrapper">
+
+            <!-- 출석 요약 숫자 -->
+             <div class="card">
+                <div class="attendance-summary">
+                    <div class="summary-item">
+                        <p class="summary-num">18</p>
+                        <p class="summary-label">이번 달 출석</p>
+                    </div>
+                    <div class="summary-item">
+                        <p class="summary-num">61</p>
+                        <p class="summary-label">이번 달 출석</p>
+                </div>
+                <div class="summary-item">
+                    <p class="summary-num">142</p>
+                    <p class="summary-label">누적 출석</p>
+                </div>
+             </div>
+         </div>
+
+         <!-- 월별 캘린더 -->
+
+         <div class="card activity-calendar-card">
+            <div class="calendar-header">
+                <span>◀</span>
+                <span class="calendar-month-title">2026년 4월</span>
+                <span>▶</span>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>월</th>
+                        <th>화</th>
+                        <th>수</th>
+                        <th>목</th>
+                        <th>금</th>
+                        <th>토</th>
+                        <th>일</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="empty"></td>
+                        <td class="attended">1</td>
+                        <td class="attended">2</td>
+                        <td>3</td>
+                        <td class="attended">4</td>
+                        <td class="attended">5</td>
+                        <td>6</td>
+                    </tr>
+                    <tr>
+                        <td class="attended">7</td>
+                        <td class="attended">8</td>
+                        <td class="attended">9</td>
+                        <td>10</td>
+                        <td class="attended">11</td>
+                        <td class="attended">12</td>
+                        <td class="attended">13</td>
+                    </tr>
+                    <tr>
+                        <td class="attended">14</td>
+                        <td>15</td>
+                        <td class="attended">16</td>
+                        <td>17</td>
+                        <td class="attended">18</td>
+                        <td class="attended">19</td>
+                        <td class="today">20</td>
+                    </tr>
+                    <tr>
+                        <td>21</td>
+                        <td>22</td>
+                        <td>23</td>
+                        <td>24</td>
+                        <td>25</td>
+                        <td>26</td>
+                        <td>27</td>
+                    </tr>
+                    <tr>
+                        <td>28</td>
+                        <td>29</td>
+                        <td>30</td>
+                        <td class="empty"></td>
+                        <td class="empty"></td>
+                        <td class="empty"></td>
+                        <td class="empty"></td>
+                    </tr>
+
+                </tbody>
+            </table>
+         </div>
+
+         <!-- 출석 리스트 -->
+          <div class="card">
+            <p class="activity-list-title">📋 출석 기록</p>
+            <div class="activity-item">
+                <div>
+                    <p class="activity-date">2026.04.19</p>
+                    <p class="activity-day">토요일</p>
+                </div>
+                <span class="activity-time">09:32</span>
+            </div>
+            <div class="activity-item">
+                <div>
+                    <p class="activity-date">2026.04.18</p>
+                    <p class="activity-day">금요일</p>
+                </div>
+                <span class="activity-time">07:15</span>
+            </div>
+            <div class="activity-item">
+                <div>
+                    <p class="activity-date">2026.04.16</p>
+                    <p class="activity-day">수요일</p>
+                </div>
+                <span class="activity-time">18:44</span>
+            </div>
+            <div class="activity-item">
+                <div>
+                    <p class="activity-date">2026.04.14</p>
+                    <p class="activity-day">월요일</p>
+                </div>
+                <span class="activity-time">06:58</span>
+            </div>
+            <div class="activity-item">
+                <div>
+                    <p class="activity-date">2026.04.13</p>
+                    <p class="activity-day">일요일</p>
+                </div>
+                <span class="activity-time">10:20</span>
+            </div>
+          </div>
+      </div>
+      </div>
+
+      <!-- 관리자 페이지-->
+       <div class="main admin-main" id="adminMain">
+
+        <!-- 상단 헤더 -->
+         <div class="top-header">
+            <div class="branch-info">
+                <span class="branch-name">⚙️ 관리자</span>
+            </div>
+            <span class="alarm">🔔</span>
+         </div>
+
+         <div class="admin-wrapper">
+
+                <!-- 회원 목록-->
+                 <div class="card">
+                    <p class="section-title">👷🏿‍♀️회원 목록</p>
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>이름</th>
+                                <th>아이디</th>
+                                <th>가입일</th>
+                                <th>멤버십</th>
+                                <th>관리</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>홍길동</td>
+                                <td>hong1234</td>
+                                <td>2025.10.01</td>
+                                <td><span class="status-on">구독 중</span></td>
+                                <td>
+                                    <button class="admin-btn edit">수정</button>
+                                    <button class="admin-btn delete">삭제</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>김철수</td>
+                                <td>kimcs99</td>
+                                <td>2025.11.15</td>
+                                <td><span class="status-on">구독 중</span></td>
+                                <td>
+                                    <button class="admin-btn edit">수정</button>
+                                    <button class="admin-btn delete">삭제</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>이영희</td>
+                                <td>lee_yh</td>
+                                <td>2026.01.03</td>
+                                <td><span class="status-off">만료</span></td>
+                                <td>
+                                    <button class="admin-btn edit">수정</button>
+                                    <button class="admin-btn delete">삭제</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>박민준</td>
+                                <td>parkmin</td>
+                                <td>2026.02.20</td>
+                                <td><span class="status-on">구독 중</span></td>
+                                <td>
+                                    <button class="admin-btn edit">수정</button>
+                                    <button class="admin-btn delete">삭제</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                 </div>
+
+                 <!-- 출석 현황 -->
+                  <div class="card">
+                    <p class="section-title">✅ 출석 현황</p>
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>이름</th>
+                                <th>이번 달 출석</th>
+                                <th>연속 출석</th>
+                                <th>최근 출석일</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>홍길동</td>
+                                <td>18일</td>
+                                <td>61주</td>
+                                <td>2026.04.19</td>
+                            </tr>
+                            <tr>
+                                <td>김철수</td>
+                                <td>12일</td>
+                                <td>3주</td>
+                                <td>2026.04.18</td>
+                            </tr>
+                            <tr>
+                                <td>이영희</td>
+                                <td>5일</td>
+                                <td>1주</td>
+                                <td>2026.04.15</td>
+                            </tr>
+                            <tr>
+                                <td>박민준</td>
+                                <td>20일</td>
+                                <td>8주</td>
+                                <td>2026.04.19</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                  </div>
+
+                  <!-- 상품 관리 -->
+                   <div class="card">
+                    <p class="section-title">🛍️ 상품 관리</p>
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>상품명</th>
+                                <th>가격</th>
+                                <th>뱃지</th>
+                                <th>관리</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>무바 프로틴</td>
+                                <td>2,900원</td>
+                                <td><span class="status-on">1+1</span></td>
+                                <td>
+                                    <button class="admin-btn edit">수정</button>
+                                    <button class="admin-btn delete">삭제</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>아이시스 생수</td>
+                                <td>800원</td>
+                                <td></td>
+                                <td>
+                                    <button class="admin-btn edit">수정</button>
+                                    <button class="admin-btn delete">삭제</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>몬스터 에너지</td>
+                                <td>2,500원</td>
+                                <td><span class="status-on">1+1</span></td>
+                                <td>
+                                    <button class="admin-btn edit">수정</button>
+                                    <button class="admin-btn delete">삭제</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>닭가슴살 바</td>
+                                <td>4,500원</td>
+                                <td><span style="color: #7c6dfa; font-weight: bold;">NEW</span></td>
+                                <td>
+                                    <button class="admin-btn edit">수정</button>
+                                    <button class="admin-btn delete">삭제</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <button class="admin-btn add">+ 상품 추가</button>
+                   </div>
+
+                   <!-- 쿠폰 관리 -->
+                    <div class="card">
+                        <p class="section-title">🎟️ 쿠폰 관리</p>
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>쿠폰명</th>
+                                    <th>지급 대상</th>
+                                    <th>만료일</th>
+                                    <th>관리</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>무바 프로틴 1+1</td>
+                                    <td>홍길동</td>
+                                    <td>2026.05.31</td>
+                                    <td>
+                                        <button class="admin-btn edit">지급</button>
+                                        <button class="admin-btn delete">삭제</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>아이시스 10% 할인</td>
+                                    <td>홍길동</td>
+                                    <td>2026.06.15</td>
+                                    <td>
+                                        <button class="admin-btn edit">지급</button>
+                                        <button class="admin-btn delete">삭제</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>몬스터 1+1</td>
+                                    <td>박민준</td>
+                                    <td>2026.05.05</td>
+                                    <td>
+                                        <button class="admin-btn edit">지급</button>
+                                        <button class="admin-btn delete">삭제</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <button class="admin-btn add">+ 쿠폰 추가</button>
+                    </div>
+         </div>
+       </div>
+
+      <script>
+        function goHome() {
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('signup-screen').classList.remove('show');
+        }
+
+        function showSignup() {
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('signup-screen').classList.add('show');
+        }
+
+        function showLogin() {
+            document.getElementById('signup-screen').classList.remove('show');
+            document.getElementById('login-screen').classList.remove('hidden');
+        }
+
+        function showMypage() {
+            document.getElementById('homeMain').classList.add('hidden');
+            document.getElementById('shopMain').classList.remove('active');
+            document.getElementById('activityMain').classList.remove('active');
+            document.getElementById('adminMain').classList.remove('active');
+            document.getElementById('mypageMain').classList.add('active');
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            document.getElementById('navMypage').classList.add('active');
+        }
+
+        function showHome() {
+            document.getElementById('mypageMain').classList.remove('active');
+            document.getElementById('shopMain').classList.remove('active');
+            document.getElementById('activityMain').classList.remove('active');
+            document.getElementById('adminMain').classList.remove('active');
+            document.getElementById('homeMain').classList.remove('hidden');
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            document.getElementById('navHome').classList.add('active');
+        }
+
+        function showShop() {
+            document.getElementById('homeMain').classList.add('hidden');
+            document.getElementById('mypageMain').classList.remove('active');
+            document.getElementById('activityMain').classList.remove('active');
+            document.getElementById('adminMain').classList.remove('active');
+            document.getElementById('shopMain').classList.add('active');
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            document.getElementById('navShop').classList.add('active');
+        }
+
+        function showActivity() {
+            document.getElementById('homeMain').classList.add('hidden');
+            document.getElementById('mypageMain').classList.remove('active');
+            document.getElementById('shopMain').classList.remove('active');
+            document.getElementById('adminMain').classList.remove('active');
+            document.getElementById('activityMain').classList.add('active');
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            document.getElementById('navActivity').classList.add('active');
+        }
+
+        function showAdmin() {
+            document.getElementById('homeMain').classList.add('hidden');
+            document.getElementById('mypageMain').classList.remove('active');
+            document.getElementById('shopMain').classList.remove('active');
+            document.getElementById('activityMain').classList.remove('active');
+            document.getElementById('adminMain').classList.add('active');
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            document.getElementById('navAdmin').classList.add('active');
+        }
+      </script>
+
+</body>
+</html>
