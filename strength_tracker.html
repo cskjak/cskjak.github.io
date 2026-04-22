@@ -195,6 +195,29 @@
   .cal-day-detail{background:var(--surface2);border-radius:12px;padding:1rem;border:1px solid var(--border);}
   /* 내보내기 */
   .data-btns{display:flex;gap:8px;margin-top:8px;}
+  /* 스트릭 */
+  .streak-row{display:flex;justify-content:space-between;align-items:center;margin-top:8px;padding-top:8px;border-top:1px solid var(--border);}
+  .streak-label{font-size:12px;color:var(--muted);}
+  .streak-val{font-size:13px;font-weight:700;color:var(--text);}
+  /* 날짜 그룹 */
+  .date-group{margin-bottom:12px;}
+  .date-group-hd{display:flex;justify-content:space-between;align-items:center;padding:7px 4px;border-bottom:1px solid var(--border);margin-bottom:2px;}
+  .date-group-date{font-size:12px;font-weight:600;color:var(--text);}
+  .date-group-meta{font-size:11px;color:var(--muted);}
+  /* BMI */
+  .bmi-row{display:flex;gap:12px;margin-top:10px;margin-bottom:1rem;}
+  /* 세션 오버레이 */
+  .session-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.88);display:none;align-items:center;justify-content:center;z-index:200;padding:1rem;}
+  .session-overlay.show{display:flex;}
+  .session-box{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:1.5rem;width:100%;max-width:360px;}
+  .session-hd{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1rem;}
+  .session-ex-name{font-size:17px;font-weight:700;color:#fff;margin-bottom:4px;}
+  .session-counter{font-size:12px;color:var(--muted);}
+  .session-done-list{margin-bottom:12px;}
+  .session-done-item{padding:7px 0;border-bottom:1px solid rgba(255,255,255,0.05);font-size:13px;color:var(--accent);}
+  .session-done-item:last-child{border-bottom:none;}
+  .session-summary-box{background:var(--surface2);border-radius:10px;padding:12px;margin-bottom:12px;}
+  .session-summary-lbl{font-size:11px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px;}
   @media(max-width:400px){.stats{grid-template-columns:repeat(2,1fr);}}
 </style>
 </head>
@@ -233,6 +256,35 @@
   </div>
 </div>
 
+<!-- 세션 모드 오버레이 -->
+<div class="session-overlay" id="session-overlay">
+  <div class="session-box">
+    <div class="session-hd">
+      <div>
+        <div class="session-ex-name" id="session-ex-name">종목명</div>
+        <div class="session-counter" id="session-counter">세트 1 / 3</div>
+      </div>
+      <button class="graph-close" onclick="cancelSession()">×</button>
+    </div>
+    <div class="session-done-list" id="session-done-list"></div>
+    <div id="session-input-wrap">
+      <div class="form-grid" style="margin-bottom:12px">
+        <div class="form-group"><label>무게 (kg)</label><input type="number" id="session-kg" placeholder="100" min="0" max="500" step="2.5"></div>
+        <div class="form-group"><label>렙</label><input type="number" id="session-reps" placeholder="5" min="1" max="100"></div>
+      </div>
+      <button class="btn btn-accent" onclick="completeSet()">✓ 세트 완료</button>
+    </div>
+    <div id="session-finish-wrap" style="display:none">
+      <div class="session-summary-box">
+        <div class="session-summary-lbl">세션 완료 🎉</div>
+        <div id="session-final-summary"></div>
+      </div>
+      <button class="btn btn-accent" onclick="saveAndCloseSession()">저장하고 닫기</button>
+    </div>
+    <button class="btn btn-danger" onclick="cancelSession()" style="margin-top:8px">버리고 닫기</button>
+  </div>
+</div>
+
 <div class="wrap">
   <a href="index.html" class="back-link">← 포트폴리오</a>
   <div class="header">
@@ -264,6 +316,10 @@
         <option value="6">목표: 주 6일</option>
       </select>
     </div>
+    <div class="streak-row">
+      <span class="streak-label">연속 출석</span>
+      <span class="streak-val" id="streak-val">—</span>
+    </div>
   </div>
 
   <!-- 탭 -->
@@ -286,6 +342,10 @@
     <div class="card">
       <div class="card-title">세션별 총 볼륨 (kg)</div>
       <div class="chart-bars" id="chart-bars"><div class="empty"><span class="empty-icon">📊</span>기록이 없어요</div></div>
+    </div>
+    <div class="card">
+      <div class="card-title">이번 주 부위별 볼륨</div>
+      <div id="weekly-cat-chart"><div class="empty" style="padding:1.5rem 0">이번 주 기록이 없어요</div></div>
     </div>
   </div>
 
@@ -405,6 +465,10 @@
       <div class="weight-stat-row">
         <div class="weight-stat"><div class="weight-stat-val" id="w-latest">—</div><div class="weight-stat-lbl">최근 체중</div></div>
         <div class="weight-stat"><div class="weight-stat-val" id="w-diff">—</div><div class="weight-stat-lbl">총 변화량</div></div>
+      </div>
+      <div class="bmi-row" id="bmi-row" style="display:none">
+        <div class="weight-stat"><div class="weight-stat-val" id="bmi-val">—</div><div class="weight-stat-lbl">BMI</div></div>
+        <div class="weight-stat"><div class="weight-stat-val" id="bmi-cat" style="font-size:14px">—</div><div class="weight-stat-lbl">체형</div></div>
       </div>
       <div id="weight-chart"><div class="empty" style="padding:1rem;font-size:12px">기록이 2개 이상이면 그래프가 나와요</div></div>
     </div>
@@ -528,13 +592,10 @@ function render(){
   document.getElementById('pr-list').innerHTML=fe.length?fe.map(e=>`<div class="lift-row" onclick="showGraph('${e.replace(/'/g,"\\'")}')"><div class="lift-info"><div class="lift-name"><span class="dot" style="background:${getExColor(prCat[e])}"></span>${e}</div><div class="lift-1rm">추정 1RM ${prOrm[e]}kg · ${prCat[e]}</div></div><div class="bar-wrap"><div class="bar" style="width:${Math.round(prs[e]/mP*100)}%;background:${getExColor(prCat[e])}"></div></div><div class="kg-val">${prs[e]}<span class="kg-unit">kg</span></div></div>`).join(''):'<div class="empty">기록이 없어요</div>';
   const aH=['전체',...new Set(logs.map(l=>l.cat))];
   document.getElementById('history-filter').innerHTML=aH.map(c=>`<button class="hf-btn${histFilter===c?' active':''}" onclick="setHistFilter('${c}')">${c}</button>`).join('');
-  const fl=histFilter==='전체'?logs:logs.filter(l=>l.cat===histFilter);
-  document.getElementById('history-list').innerHTML=fl.length===0?'<div class="empty">아직 기록이 없어요</div>':fl.map(l=>{
-    const ri=logs.indexOf(l),d=new Date(l.ts),ds=(d.getMonth()+1)+'/'+d.getDate()+' '+d.getHours()+':'+String(d.getMinutes()).padStart(2,'0'),col=getExColor(l.cat);
-    if(l.type==='cardio')return`<div class="log-item"><div class="log-left"><div class="log-ex"><span class="dot" style="background:${col}"></span>${l.ex}<span class="badge-cat">${l.cat}</span></div><div class="log-detail">${l.duration}분${l.dist>0?' · '+l.dist+'km':''} · ${ds}</div>${l.note?`<div class="log-note">"${l.note}"</div>`:''}</div><div class="log-right"><div><div class="log-kg">${l.duration}<span style="font-size:12px;font-weight:400;color:var(--muted)">분</span></div></div><button class="del-btn" onclick="deleteLog(${ri})">×</button></div></div>`;
-    const orm=l.orm||calc1RM(l.kg,l.reps);
-    return`<div class="log-item"><div class="log-left"><div class="log-ex"><span class="dot" style="background:${col}"></span>${l.ex}${l.ispr?'<span class="badge">PR</span>':''}<span class="badge-cat">${l.cat}</span></div><div class="log-detail">${l.sets}세트 × ${l.reps}렙 · ${ds}</div>${l.note?`<div class="log-note">"${l.note}"</div>`:''}</div><div class="log-right"><div><div class="log-kg">${l.kg}kg</div><div class="log-1rm">1RM ~${orm}kg</div></div><button class="del-btn" onclick="deleteLog(${ri})">×</button></div></div>`;
-  }).join('');
+  renderHistory();
+  const streak=getStreak();
+  document.getElementById('streak-val').textContent=streak>0?`🔥 ${streak}일 연속`:'아직 기록 없음';
+  renderWeeklyCatChart();
   const sess={};
   logs.filter(l=>l.type==='weight').forEach(l=>{const d=new Date(l.ts),k=(d.getMonth()+1)+'/'+d.getDate();sess[k]=(sess[k]||0)+l.kg*l.sets*l.reps;});
   const ks=Object.keys(sess).slice(-8),cb=document.getElementById('chart-bars');
@@ -669,7 +730,7 @@ function renderRoutines(){
     el.innerHTML='<div style="font-size:12px;color:var(--muted);text-align:center;padding:1rem 0">위에서 운동 설정 후 "현재 설정 루틴으로 저장"을 누르세요</div>';
     return;
   }
-  el.innerHTML=routines.map((r,i)=>`<div class="routine-item"><div><div class="routine-name">${r.name}</div><div class="routine-sub">${r.cat} · ${r.ex} · ${r.sets}세트 ${r.reps}렙</div></div><div class="routine-actions"><button class="routine-load-btn" onclick="loadRoutine(${i})">불러오기</button><button class="routine-del-btn" onclick="deleteRoutine(${i})">삭제</button></div></div>`).join('');
+  el.innerHTML=routines.map((r,i)=>`<div class="routine-item"><div><div class="routine-name">${r.name}</div><div class="routine-sub">${r.cat} · ${r.ex} · ${r.sets}세트 ${r.reps}렙</div></div><div class="routine-actions"><button class="routine-load-btn" style="background:var(--accent);color:#0a0a0f;border-color:var(--accent)" onclick="startSession(${i})">▶ 세션</button><button class="routine-load-btn" onclick="loadRoutine(${i})">불러오기</button><button class="routine-del-btn" onclick="deleteRoutine(${i})">삭제</button></div></div>`).join('');
 }
 
 // ── 주간 목표 ──
@@ -727,6 +788,11 @@ function renderWeightTab(){
     document.getElementById('w-latest').textContent=latest+'kg';
     document.getElementById('w-diff').textContent=(diff>=0?'+':'')+diff+'kg';
     document.getElementById('w-diff').style.color=diff<=0?'var(--accent)':'#e74c3c';
+    const bmi=calcBMI(latest,userHeight),bcat=getBMICat(bmi);
+    document.getElementById('bmi-val').textContent=bmi;
+    document.getElementById('bmi-cat').textContent=bcat.label;
+    document.getElementById('bmi-cat').style.color=bcat.color;
+    document.getElementById('bmi-row').style.display='flex';
     if(weights.slice(-30).length>=2)drawWeightChart(weights.slice(-30),chartEl);
     else chartEl.innerHTML='<div class="empty" style="padding:1rem;font-size:12px">기록이 2개 이상이면 그래프가 나와요</div>';
   }
@@ -917,6 +983,136 @@ function renderStepHistory(){
     const[,m,d]=date.split('-'),isT=date===today,bp=Math.round(steps/mx*100),ok=steps>=stepGoal,col=ok?'#EF9F27':'var(--accent)';
     return`<div class="step-hist-row"><div class="step-hist-top"><span class="step-hist-date" style="${isT?'color:var(--text);font-weight:600':''}">${m}/${d}${isT?' (오늘)':''}</span><div class="step-hist-right">${ok?'<span class="badge" style="font-size:9px">달성🎉</span>':''}<span class="step-hist-val">${steps.toLocaleString()}<span style="font-size:10px;font-weight:400;color:var(--muted)"> 걸음</span></span></div></div><div class="step-bar-bg"><div class="step-bar-fill" style="width:${bp}%;background:${col}"></div></div></div>`;
   }).join('');
+}
+
+// ── 스트릭 ──
+function getStreak(){
+  const dateSet=new Set(logs.map(l=>{const d=new Date(l.ts);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}));
+  let streak=0,check=new Date();
+  const todayKey=check.getFullYear()+'-'+String(check.getMonth()+1).padStart(2,'0')+'-'+String(check.getDate()).padStart(2,'0');
+  if(!dateSet.has(todayKey))check.setDate(check.getDate()-1);
+  while(true){
+    const k=check.getFullYear()+'-'+String(check.getMonth()+1).padStart(2,'0')+'-'+String(check.getDate()).padStart(2,'0');
+    if(dateSet.has(k)){streak++;check.setDate(check.getDate()-1);}else break;
+  }
+  return streak;
+}
+
+// ── 주간 부위별 볼륨 차트 ──
+function renderWeeklyCatChart(){
+  const el=document.getElementById('weekly-cat-chart');
+  const ws=Date.now()-7*86400000;
+  const wl=logs.filter(l=>l.type==='weight'&&l.ts>ws);
+  if(!wl.length){el.innerHTML='<div class="empty" style="padding:1.5rem 0">이번 주 기록이 없어요</div>';return;}
+  const cv={};
+  wl.forEach(l=>{cv[l.cat]=(cv[l.cat]||0)+l.kg*(l.sets||1)*l.reps;});
+  const sorted=Object.entries(cv).sort((a,b)=>b[1]-a[1]);
+  const mx=sorted[0][1];
+  el.innerHTML=sorted.map(([cat,vol])=>{
+    const pct=Math.round(vol/mx*100),col=CAT_COLORS[cat]||'#888';
+    return`<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px"><span style="font-size:12px;color:var(--text);display:flex;align-items:center;gap:6px"><span style="width:8px;height:8px;border-radius:50%;background:${col};display:inline-block"></span>${cat}</span><span style="font-size:12px;font-weight:600;color:var(--text)">${Math.round(vol).toLocaleString()}<span style="font-size:10px;font-weight:400;color:var(--muted)">kg</span></span></div><div style="height:5px;background:var(--border);border-radius:3px;overflow:hidden"><div style="height:100%;width:${pct}%;background:${col};border-radius:3px;transition:width .5s ease"></div></div></div>`;
+  }).join('');
+}
+
+// ── BMI ──
+function calcBMI(kg,cm){const h=cm/100;return Math.round(kg/(h*h)*10)/10;}
+function getBMICat(bmi){
+  if(bmi<18.5)return{label:'저체중',color:'#378ADD'};
+  if(bmi<25)return{label:'정상',color:'var(--accent)'};
+  if(bmi<30)return{label:'과체중',color:'#EF9F27'};
+  return{label:'비만',color:'#e74c3c'};
+}
+
+// ── 히스토리 날짜 그룹 렌더 ──
+function renderHistory(){
+  const el=document.getElementById('history-list');
+  const fl=histFilter==='전체'?logs:logs.filter(l=>l.cat===histFilter);
+  if(!fl.length){el.innerHTML='<div class="empty">아직 기록이 없어요</div>';return;}
+  const groups=new Map();
+  fl.forEach(l=>{
+    const d=new Date(l.ts),k=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+    if(!groups.has(k))groups.set(k,[]);
+    groups.get(k).push(l);
+  });
+  const DAY=['일','월','화','수','목','금','토'];
+  el.innerHTML=[...groups.keys()].sort((a,b)=>b.localeCompare(a)).map(dk=>{
+    const[y,m,d]=dk.split('-').map(Number),dow=new Date(y,m-1,d).getDay();
+    const dl=groups.get(dk),wl=dl.filter(l=>l.type==='weight');
+    const tv=wl.reduce((a,l)=>a+l.kg*(l.sets||1)*l.reps,0);
+    const exNames=[...new Set(dl.map(l=>l.ex))];
+    const items=dl.map(l=>{
+      const ri=logs.indexOf(l),col=getExColor(l.cat);
+      if(l.type==='cardio')return`<div class="log-item"><div class="log-left"><div class="log-ex"><span class="dot" style="background:${col}"></span>${l.ex}<span class="badge-cat">${l.cat}</span></div><div class="log-detail">${l.duration}분${l.dist>0?' · '+l.dist+'km':''}</div>${l.note?`<div class="log-note">"${l.note}"</div>`:''}</div><div class="log-right"><div class="log-kg">${l.duration}<span style="font-size:12px;font-weight:400;color:var(--muted)">분</span></div><button class="del-btn" onclick="deleteLog(${ri})">×</button></div></div>`;
+      const orm=l.orm||calc1RM(l.kg,l.reps);
+      return`<div class="log-item"><div class="log-left"><div class="log-ex"><span class="dot" style="background:${col}"></span>${l.ex}${l.ispr?'<span class="badge">PR</span>':''}<span class="badge-cat">${l.cat}</span></div><div class="log-detail">${l.sets||1}세트 × ${l.reps}렙</div>${l.note?`<div class="log-note">"${l.note}"</div>`:''}</div><div class="log-right"><div><div class="log-kg">${l.kg}kg</div><div class="log-1rm">1RM ~${orm}kg</div></div><button class="del-btn" onclick="deleteLog(${ri})">×</button></div></div>`;
+    }).join('');
+    return`<div class="date-group"><div class="date-group-hd"><span class="date-group-date">${m}/${d} ${DAY[dow]}</span><span class="date-group-meta">${exNames.length}종목${tv>0?' · '+Math.round(tv).toLocaleString()+'kg':''}</span></div>${items}</div>`;
+  }).join('');
+}
+
+// ── 세션 모드 ──
+let sessionData=null;
+function startSession(i){
+  const r=routines[i];
+  sessionData={cat:r.cat,ex:r.ex,targetSets:r.sets,targetReps:r.reps,completedSets:[],done:false};
+  renderSessionUI();
+  document.getElementById('session-overlay').classList.add('show');
+  showTab('log');
+}
+function renderSessionUI(){
+  const{ex,targetSets,targetReps,completedSets,done}=sessionData;
+  document.getElementById('session-ex-name').textContent=ex;
+  const doneEl=document.getElementById('session-done-list');
+  doneEl.innerHTML=completedSets.map((s,i)=>`<div class="session-done-item">✓ ${i+1}세트 · ${s.kg}kg × ${s.reps}렙</div>`).join('');
+  if(done){
+    document.getElementById('session-counter').textContent='모든 세트 완료! 💪';
+    document.getElementById('session-input-wrap').style.display='none';
+    document.getElementById('session-finish-wrap').style.display='';
+    document.getElementById('session-final-summary').innerHTML=`<div style="font-size:13px;color:var(--text)">총 ${completedSets.length}세트 완료<br>최고 무게 ${Math.max(...completedSets.map(s=>s.kg))}kg</div>`;
+  }else{
+    document.getElementById('session-counter').textContent=`세트 ${completedSets.length+1} / ${targetSets}`;
+    document.getElementById('session-reps').value=targetReps;
+    document.getElementById('session-input-wrap').style.display='';
+    document.getElementById('session-finish-wrap').style.display='none';
+  }
+}
+function completeSet(){
+  const kg=parseFloat(document.getElementById('session-kg').value);
+  const reps=parseInt(document.getElementById('session-reps').value);
+  if(!kg||kg<=0){toast('무게를 입력해주세요');document.getElementById('session-kg').focus();return;}
+  if(!reps||reps<1){toast('렙수를 입력해주세요');return;}
+  sessionData.completedSets.push({kg,reps});
+  if(sessionData.completedSets.length>=sessionData.targetSets){
+    sessionData.done=true;
+    renderSessionUI();
+    toast('세션 완료! 💪');
+  }else{
+    startTimer(90);
+    document.getElementById('session-kg').value='';
+    renderSessionUI();
+    toast(`${sessionData.completedSets.length}세트 완료!`);
+  }
+}
+function saveAndCloseSession(){
+  const{cat,ex,completedSets}=sessionData;
+  const baseTs=Date.now();
+  let curPR=getPRs().prs[ex]||0;
+  const entries=completedSets.map(({kg,reps},i)=>{
+    const ispr=kg>curPR;if(ispr)curPR=kg;
+    return{cat,ex,type:'weight',kg,sets:1,reps,orm:calc1RM(kg,reps),ispr,note:'',ts:baseTs-(completedSets.length-1-i)*1000};
+  });
+  [...entries].reverse().forEach(e=>logs.unshift(e));
+  save();render();
+  sessionData=null;
+  document.getElementById('session-overlay').classList.remove('show');
+  toast('세션 저장 완료 ✅');
+}
+function cancelSession(){
+  if(sessionData&&sessionData.completedSets.length>0&&!sessionData.done){
+    if(!confirm('진행 중인 세션을 버릴까요?'))return;
+  }
+  sessionData=null;
+  document.getElementById('session-overlay').classList.remove('show');
 }
 
 // ── 초기화 ──
