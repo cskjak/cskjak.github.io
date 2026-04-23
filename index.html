@@ -153,6 +153,11 @@
     color: transparent;
     -webkit-text-stroke: 1px rgba(255,255,255,0.4);
     display: block;
+    overflow: hidden;
+    white-space: nowrap;
+    width: 0;
+    border-right: 2px solid var(--accent);
+    animation: typing 1.2s steps(10, end) 0.9s forwards, blink-cursor 0.75s step-end 0.9s infinite;
   }
   .hero-desc {
     font-size: 1.1rem; color: var(--muted); line-height: 1.8;
@@ -186,14 +191,19 @@
     display: flex; flex-direction: column; align-items: center; gap: 8px;
     font-family: 'DM Mono', monospace; font-size: 11px;
     color: var(--muted); letter-spacing: 0.1em;
-    animation: float 3s ease-in-out infinite;
-    opacity: 0; animation: heroEnter 1s ease 1s forwards, float 3s ease-in-out 1.5s infinite;
+    opacity: 0; animation: fadeIn 1s ease 1s forwards, float 3s ease-in-out 1.5s infinite;
   }
   .scroll-indicator::after {
     content: ''; width: 1px; height: 50px;
     background: linear-gradient(to bottom, var(--muted), transparent);
   }
   @keyframes float { 0%,100%{transform:translateX(-50%) translateY(0)} 50%{transform:translateX(-50%) translateY(-8px)} }
+  @keyframes fadeIn { to { opacity: 1; } }
+  @keyframes typing { to { width: 100%; } }
+  @keyframes blink-cursor {
+    0%, 100% { border-right-color: var(--accent); }
+    50% { border-right-color: transparent; }
+  }
 
   /* ── Section ── */
   section { padding: 8rem 4rem; }
@@ -501,7 +511,7 @@
     <div class="skill-item">
       <div class="skill-icon"><i class="devicon-java-plain colored"></i></div>
       <div class="skill-name">Java</div>
-      <div class="skill-level upcoming">UPCOMING</div>
+      <div class="skill-level learning">LEARNING</div>
     </div>
     <div class="skill-item">
       <div class="skill-icon"><i class="devicon-spring-original colored"></i></div>
